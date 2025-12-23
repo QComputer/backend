@@ -12,7 +12,7 @@
     "output": "."
   },
   "start": {
-    "command": "npm start"
+    "command": "node server.js"
   },
   "health_check": {
     "path": "/health",
