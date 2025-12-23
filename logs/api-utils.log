@@ -1,0 +1,30 @@
+{"details":"require is not defined","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-17T09:57:42.898Z"}
+{"details":"require is not defined","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-17T09:57:42.912Z"}
+{"details":"require is not defined","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-17T09:57:44.382Z"}
+{"details":"require is not defined","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-17T10:00:27.768Z"}
+{"details":"require is not defined","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-17T10:00:27.872Z"}
+{"details":"require is not defined","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-17T10:00:29.352Z"}
+{"details":"require is not defined","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-17T10:00:30.108Z"}
+{"details":null,"level":"error","message":"API Error [403]: Unauthorized - admin access required--user.id:6941a50c484bbb6833bc245d","timestamp":"2025-12-17T12:51:31.765Z"}
+{"details":null,"level":"error","message":"API Error [403]: Unauthorized - admin access required--user.id:6941a50c484bbb6833bc245d","timestamp":"2025-12-17T12:51:31.787Z"}
+{"details":null,"level":"error","message":"API Error [403]: Unauthorized - admin access required--user.id:6941a50c484bbb6833bc245d","timestamp":"2025-12-17T12:51:48.879Z"}
+{"details":null,"level":"error","message":"API Error [403]: Unauthorized - admin access required--user.id:6941a50c484bbb6833bc245d","timestamp":"2025-12-17T12:51:48.896Z"}
+{"details":null,"level":"error","message":"API Error [403]: Unauthorized - admin access required--user.id:6941a50c484bbb6833bc245d","timestamp":"2025-12-17T12:53:55.544Z"}
+{"details":null,"level":"error","message":"API Error [403]: Unauthorized - admin access required--user.id:6941a50c484bbb6833bc245d","timestamp":"2025-12-17T12:53:55.609Z"}
+{"details":null,"level":"error","message":"API Error [403]: Unauthorized - admin access required--user.id:6941a50c484bbb6833bc245d","timestamp":"2025-12-17T12:54:01.977Z"}
+{"details":null,"level":"error","message":"API Error [403]: Unauthorized - admin access required--user.id:6941a50c484bbb6833bc245d","timestamp":"2025-12-17T12:54:01.994Z"}
+{"details":null,"level":"error","message":"API Error [403]: Unauthorized - admin access required--user.id:6941a50c484bbb6833bc245d","timestamp":"2025-12-17T12:59:05.595Z"}
+{"details":null,"level":"error","message":"API Error [403]: Unauthorized - admin access required--user.id:6941a50c484bbb6833bc245d","timestamp":"2025-12-17T12:59:07.012Z"}
+{"details":null,"level":"error","message":"API Error [403]: Unauthorized - admin access required--user.id:6941a50c484bbb6833bc245d","timestamp":"2025-12-17T13:00:53.402Z"}
+{"details":null,"level":"error","message":"API Error [403]: Unauthorized - admin access required--user.id:6941a50c484bbb6833bc245d","timestamp":"2025-12-17T13:00:53.585Z"}
+{"details":"getaddrinfo ENOTFOUND ac-9tjrqlw-shard-00-02.6chp5nv.mongodb.net","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-18T12:38:52.748Z"}
+{"details":"getaddrinfo ENOTFOUND ac-9tjrqlw-shard-00-02.6chp5nv.mongodb.net","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-18T12:38:57.758Z"}
+{"details":"Operation `sessions.insertOne()` buffering timed out after 10000ms","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-21T13:41:55.173Z"}
+{"details":"Operation `sessions.insertOne()` buffering timed out after 10000ms","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-21T13:42:40.539Z"}
+{"details":"Operation `sessions.insertOne()` buffering timed out after 10000ms","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-21T22:12:12.812Z"}
+{"details":"Operation `sessions.insertOne()` buffering timed out after 10000ms","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-21T22:26:42.482Z"}
+{"details":"connect ECONNREFUSED 10.10.34.35:27017","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-22T08:15:45.316Z"}
+{"details":"Operation `sessions.insertOne()` buffering timed out after 10000ms","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-22T09:34:56.099Z"}
+{"details":"Operation `sessions.insertOne()` buffering timed out after 10000ms","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-22T09:36:56.098Z"}
+{"details":"Operation `sessions.insertOne()` buffering timed out after 10000ms","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-22T09:49:28.988Z"}
+{"details":"getaddrinfo ENOTFOUND ac-9tjrqlw-shard-00-01.6chp5nv.mongodb.net","level":"error","message":"API Error [500]: Internal server error during session setup","timestamp":"2025-12-22T11:09:58.756Z"}

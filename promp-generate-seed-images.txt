@@ -1,0 +1,108 @@
+I need you to generate realistic, medium-quality images for a database seeding project. Please create images for products, categories, user avatars, and other assets with very specific filenames that my seeding code can recognize.
+
+**IMPORTANT NAMING REQUIREMENTS:**
+- Use EXACTLY the filenames I specify below
+- Save each image with the exact filename (case-sensitive)
+- Generate clean, simple images suitable for database seeding
+- Make them realistic but not overly complex
+
+**CATEGORY IMAGES (category_[name].jpg):**
+1. category_pizza.jpg - A delicious looking pizza with various toppings, restaurant style
+2. category_burgers.jpg - Juicy cheeseburger with fresh ingredients
+3. category_pasta.jpg - Fresh pasta dish with grilled vegetables
+4. category_beverages.jpg - Assortment of cold drinks and beverages
+5. category_sides.jpg - Crispy french fries and side dishes
+6. category_smartphones.jpg - Modern smartphone display
+7. category_laptops.jpg - Professional laptop on desk
+8. category_headphones.jpg - Premium wireless headphones
+9. category_cameras.jpg - Professional DSLR camera
+10. category_smart_watches.jpg - Fitness smartwatch on wrist
+11. category_gaming.jpg - Gaming console with controller
+12. category_mens_clothing.jpg - Men's casual shirt and pants
+13. category_womens_clothing.jpg - Women's fashion dress
+14. category_underwear_lingerie.jpg - Comfortable underwear set
+15. category_bras.jpg - Sports bra and lingerie
+16. category_shoes.jpg - Athletic running shoes
+17. category_handbags.jpg - Elegant leather handbag
+18. category_backpacks.jpg - Laptop backpack
+19. category_luggage.jpg - Travel suitcase
+20. category_wallets.jpg - Leather wallet
+21. category_jewelry.jpg - Silver necklace and jewelry
+22. category_sunglasses.jpg - Aviator sunglasses
+23. category_furniture.jpg - Modern dining table
+24. category_kitchen.jpg - Kitchen appliances
+25. category_bedding.jpg - Luxury bedding set
+26. category_beauty_personal_care.jpg - Skincare products
+27. category_sports_equipment.jpg - Fitness equipment
+28. category_fitness_wear.jpg - Athletic wear
+29. category_books.jpg - Stack of books
+30. category_music_movies.jpg - Music and movie collection
+
+**PRODUCT IMAGES (product_[name].jpg):**
+1. product_pepperoni_pizza.jpg - Classic pepperoni pizza
+2. product_three_pepperoni_pizza.jpg - Pizza with extra pepperoni
+3. product_cheese_burger.jpg - Cheeseburger with toppings
+4. product_grilled_pasta.jpg - Pasta with grilled vegetables
+5. product_sprite_drink.jpg - Sprite soda can
+6. product_french_fries.jpg - Golden french fries
+7. product_iphone_15_pro.jpg - iPhone 15 Pro smartphone
+8. product_samsung_galaxy_s24.jpg - Samsung Galaxy S24
+9. product_macbook_pro_m3.jpg - MacBook Pro laptop
+10. product_dell_xps_13.jpg - Dell XPS 13 ultrabook
+11. product_sony_wh_1000xm5.jpg - Sony noise-canceling headphones
+12. product_airpods_pro_2.jpg - AirPods Pro earbuds
+13. product_canon_eos_r5.jpg - Canon EOS R5 camera
+14. product_apple_watch_series_9.jpg - Apple Watch Series 9
+15. product_playstation_5.jpg - PlayStation 5 console
+16. product_mens_casual_shirt.jpg - Men's cotton shirt
+17. product_womens_summer_dress.jpg - Summer dress
+18. product_cotton_underwear_set.jpg - Cotton underwear pack
+19. product_wireless_sports_bra.jpg - Sports bra
+20. product_running_shoes.jpg - Running shoes
+21. product_leather_handbag.jpg - Leather handbag
+22. product_laptop_backpack.jpg - Laptop backpack
+23. product_travel_suitcase.jpg - Hard-shell suitcase
+24. product_leather_wallet.jpg - Leather wallet
+25. product_silver_necklace.jpg - Silver necklace
+26. product_aviator_sunglasses.jpg - Aviator sunglasses
+27. product_modern_dining_table.jpg - Dining table
+28. product_stand_mixer.jpg - Kitchen stand mixer
+29. product_egyptian_cotton_bedding_set.jpg - Bedding set
+30. product_vitamin_c_serum.jpg - Vitamin C serum bottle
+31. product_adjustable_dumbbells.jpg - Dumbbells set
+32. product_athletic_leggings.jpg - Athletic leggings
+33. product_javascript_guide.jpg - JavaScript programming book
+34. product_best_of_rock_collection.jpg - Music CD collection
+
+**USER AVATAR IMAGES (avatar_[number].jpg):**
+Generate 10 diverse, simple avatar images:
+1. avatar_1.jpg - Professional man in business attire
+2. avatar_2.jpg - Young woman with friendly smile
+3. avatar_3.jpg - Middle-aged man with beard
+4. avatar_4.jpg - Young professional woman
+5. avatar_5.jpg - Casual young man
+6. avatar_6.jpg - Elegant older woman
+7. avatar_7.jpg - Athletic young man
+8. avatar_8.jpg - Professional woman in suit
+9. avatar_9.jpg - Friendly middle-aged man
+10. avatar_10.jpg - Creative young woman
+
+**ADDITIONAL IMAGES NEEDED:**
+For catalogs and covers, generate these additional images:
+- catalog_cover_1.jpg - Food catalog cover design
+- catalog_cover_2.jpg - Electronics catalog cover
+- catalog_cover_3.jpg - Fashion catalog cover
+- profile_cover_1.jpg - Professional profile cover
+- profile_cover_2.jpg - Creative profile cover
+- profile_cover_3.jpg - Business profile cover
+
+**TECHNICAL REQUIREMENTS:**
+- Image format: JPG
+- Resolution: 512x512 to 800x800 pixels (medium resolution, suitable for web/database seeding)
+- Style: Clean, simple, realistic - perfect for database samples
+- Lighting: Natural, well-lit but not overly dramatic
+- Background: Clean white or simple appropriate context
+- No watermarks or text overlays
+- Keep designs simple and functional for seeding purposes
+
+Please generate all these images and provide them as downloadable files with the exact filenames specified. Start with the category images, then products, then avatars, then additional images.

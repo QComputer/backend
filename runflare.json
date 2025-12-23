@@ -1,0 +1,35 @@
+{
+  "name": "zero-community-backend",
+  "runtime": "nodejs",
+  "version": "20.x",
+  "port": 3000,
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "3000"
+  },
+  "build": {
+    "command": "npm install",
+    "output": "."
+  },
+  "start": {
+    "command": "npm start"
+  },
+  "health_check": {
+    "path": "/health",
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3
+  },
+  "scaling": {
+    "min_instances": 1,
+    "max_instances": 3,
+    "cpu_threshold": 70
+  },
+  "volumes": [
+    {
+      "name": "uploads",
+      "path": "/app/uploads",
+      "size": "10GB"
+    }
+  ]
+}
