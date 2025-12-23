@@ -29,7 +29,7 @@
     {
       "name": "uploads",
       "path": "/app/uploads",
-      "size": "1GB"
+      "size": "10GB"
     }
   ]
 }
