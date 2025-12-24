@@ -28,10 +28,18 @@ const getCart = async (req, res) => {
     // Unified approach: use req.user for both guest and authenticated users
     const userContext = req.user ? { userId: req.userId } : null;
     
+    // Handle anonymous users by using session-based carts
+    if (userContext && req.userId === 'anonymous') {
+      // For anonymous users, create a session-based cart
+      const sessionId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+      const cart = await cartService.getCart(sessionId);
+      return successResponse(res, cart, 'Guest cart retrieved successfully');
+    }
+    
     if (!userContext) {
       return errorResponse(res, 'Authentication required', null, 401);
     }
-
+ 
     const cart = await cartService.getCart(userContext);
     
     logger.info(`Cart retrieved for user: ${req.userId} (${req.sessionType})`);
@@ -50,18 +58,27 @@ const addToCart = async (req, res) => {
     // Unified approach: use req.user for both guest and authenticated users
     const userContext = req.user ? { userId: req.userId } : null;
     
+    // Handle anonymous users by using session-based carts
+    if (userContext && req.userId === 'anonymous') {
+      // For anonymous users, create a session-based cart
+      const sessionId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+      const { productId, quantity, catalogId } = req.body;
+      const cart = await cartService.addToCart(sessionId, productId, quantity || 1, catalogId);
+      return successResponse(res, cart, 'Item added to guest cart successfully');
+    }
+    
     if (!userContext) {
       return errorResponse(res, 'Authentication required', null, 401);
     }
-
+ 
     const { productId, quantity, catalogId } = req.body;
-
+ 
     if (!productId) {
       return errorResponse(res, 'Product ID is required', null, 400);
     }
-
+ 
     const cart = await cartService.addToCart(userContext, productId, quantity || 1, catalogId);
-    
+     
     logger.info(`Item added to cart: ${productId} from catalog ${catalogId}, user ${req.userId} (${req.sessionType})`);
     return successResponse(res, cart, 'Item added to cart successfully');
   } catch (error) {
@@ -79,7 +96,7 @@ const updateCart = async (req, res) => {
     const userContext = req.user ? { userId: req.userId } : null;
     
     if (!userContext) {
-      return errorResponse(res, 'Authentication required', null, 401);
+      return errorResponse(res, 'Authentication required for cart updates', null, 401);
     }
 
     const { productId, quantity, catalogId } = req.body;
@@ -107,7 +124,7 @@ const removeFromCart = async (req, res) => {
     const userContext = req.user ? { userId: req.userId } : null;
     
     if (!userContext) {
-      return errorResponse(res, 'Authentication required', null, 401);
+      return errorResponse(res, 'Authentication required for cart modifications', null, 401);
     }
 
     const { productId } = req.params;

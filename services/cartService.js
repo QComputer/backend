@@ -29,7 +29,14 @@ class CartService {
         query = isGuestSession ? { sessionId: userContext } : { user: userContext };
       } else if (userContext && userContext.userId) {
         // New unified context object
-        query = { user: userContext.userId };
+        // Handle anonymous users by using session-based carts
+        if (userContext.userId === 'anonymous') {
+          // For anonymous users, generate a session-based cart
+          const sessionId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+          query = { sessionId: sessionId };
+        } else {
+          query = { user: userContext.userId };
+        }
       } else if (userContext && userContext.sessionId) {
         // Guest session context
         query = { sessionId: userContext.sessionId };
