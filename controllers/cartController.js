@@ -43,8 +43,21 @@ const getCart = async (req, res) => {
  
     const cart = await cartService.getCart(userContext);
     
+    // Add session information to response for frontend to track session-based carts
+    const responseData = cart.toObject ? cart.toObject() : cart;
+    
+    if (req.sessionType === 'guest') {
+      responseData.sessionId = req.userId;
+      responseData.sessionType = 'guest';
+      responseData.isGuestCart = true;
+      
+      // Set header for frontend to track session
+      res.set('X-Session-Id', req.userId);
+      res.set('X-Session-Type', 'guest');
+    }
+    
     logger.info(`Cart retrieved for ${req.sessionType || 'user'}: ${req.userId}`);
-    return successResponse(res, cart, 'Cart retrieved successfully');
+    return successResponse(res, responseData, 'Cart retrieved successfully');
   } catch (error) {
     logger.error('Error getting cart:', error);
     return errorResponse(res, error.message || 'Failed to get cart', error, 500);
@@ -79,9 +92,22 @@ const addToCart = async (req, res) => {
     }
  
     const cart = await cartService.addToCart(userContext, productId, quantity || 1, catalogId);
-     
+    
+    // Add session information to response for frontend to track session-based carts
+    const responseData = cart.toObject ? cart.toObject() : cart;
+    
+    if (req.sessionType === 'guest') {
+      responseData.sessionId = req.userId;
+      responseData.sessionType = 'guest';
+      responseData.isGuestCart = true;
+      
+      // Set header for frontend to track session
+      res.set('X-Session-Id', req.userId);
+      res.set('X-Session-Type', 'guest');
+    }
+    
     logger.info(`Item added to cart: ${productId} from catalog ${catalogId}, ${req.sessionType || 'user'}: ${req.userId}`);
-    return successResponse(res, cart, 'Item added to cart successfully');
+    return successResponse(res, responseData, 'Item added to cart successfully');
   } catch (error) {
     logger.error('Error adding to cart:', error);
     return errorResponse(res, error.message || 'Failed to add to cart', error, 500);
