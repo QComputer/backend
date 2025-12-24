@@ -72,7 +72,7 @@ export const setupMiddleware = (app) => {
 
   // CORS configuration
   const baseOrigins = process.env.CORS_ALLOWED_ORIGINS
-    ? process.env.CORS_ALLOWED_ORIGINS.split(',')
+    ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
     : [];
 
   const additionalOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [];

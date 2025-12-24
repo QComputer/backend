@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import { connectDB } from "./config/db.js";
 import { setupSwaggerUI } from "./utils/swagger.js";
 import { setupMiddleware } from "./middleware/unifiedMiddleware.js";
+import { configureCORS } from "./middleware/corsConfig.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { successResponse, errorResponse } from "./utils/apiResponse.js";
 
@@ -48,6 +49,9 @@ const port = process.env.PORT || 3000;
 
 // Setup all middleware
 setupMiddleware(app);
+
+// Configure CORS
+configureCORS(app);
 
 // Setup Swagger documentation
 setupSwaggerUI(app);
