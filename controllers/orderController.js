@@ -1180,7 +1180,10 @@ const calculateOrderProgress = (order) => {
     } else {
       const totalMs = estTime.getTime() - startTime.getTime();
       const elapsedMs = now.getTime() - startTime.getTime();
-      progressPrepare = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+      // Only calculate progress if we have a valid time range
+      if (totalMs > 0 && elapsedMs >= 0) {
+        progressPrepare = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+      }
     }
 
     const timeLeftMs = estTime.getTime() - now.getTime();
@@ -1198,7 +1201,10 @@ const calculateOrderProgress = (order) => {
     } else {
       const totalMs = estTime.getTime() - startTime.getTime();
       const elapsedMs = now.getTime() - startTime.getTime();
-      progressPickup = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+      // Only calculate progress if we have a valid time range
+      if (totalMs > 0 && elapsedMs >= 0) {
+        progressPickup = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+      }
     }
 
     const timeLeftMs = estTime.getTime() - now.getTime();
@@ -1206,7 +1212,7 @@ const calculateOrderProgress = (order) => {
   }
 
   // Calculate delivery progress
-  if (order.dateDelivered_byDriver_est && order.driver && (order.status === 'pickedup' || order.status === 'delivered' || order.status === 'received')) {
+  if (order.dateDelivered_byDriver_est && order.driver) {
     const estTime = new Date(order.dateDelivered_byDriver_est);
     const startTime = new Date(order.datePickedup_byDriver || order.dateAccepted_byDriver);
 
@@ -1216,7 +1222,10 @@ const calculateOrderProgress = (order) => {
     } else {
       const totalMs = estTime.getTime() - startTime.getTime();
       const elapsedMs = now.getTime() - startTime.getTime();
-      progressDeliver = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+      // Only calculate progress if we have a valid time range
+      if (totalMs > 0 && elapsedMs >= 0) {
+        progressDeliver = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+      }
     }
 
     const timeLeftMs = estTime.getTime() - now.getTime();
