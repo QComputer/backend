@@ -282,7 +282,17 @@ const getPublicCatalog = async (req, res) => {
       }
     }
 
-    res.json({ success: true, data: catalog });
+    // Filter out share-related fields for non-store/non-admin users
+    const filteredCatalog = catalog.toObject();
+    const userRole = req.userRole || (req.user ? req.user.role : null);
+    
+    // Only show shareLink and qrCode to store owners and admins
+    if (userRole !== 'store' && userRole !== 'admin' && userRole !== 'staff') {
+      delete filteredCatalog.shareLink;
+      delete filteredCatalog.qrCode;
+    }
+
+    res.json({ success: true, data: filteredCatalog });
   } catch (error) {
     logger.error('Error fetching public catalog:', error);
     res.status(500).json({ success: false, message: "Error fetching public catalog" });
@@ -318,7 +328,18 @@ const getPublicUserCatalogs = async (req, res) => {
       }
     }
 
-    res.json({ success: true, data: catalogs });
+    // Filter out share-related fields for non-store/non-admin users
+    const userRole = req.userRole || (req.user ? req.user.role : null);
+    const filteredCatalogs = catalogs.map(catalog => {
+      const catalogObj = catalog.toObject();
+      if (userRole !== 'store' && userRole !== 'admin' && userRole !== 'staff') {
+        delete catalogObj.shareLink;
+        delete catalogObj.qrCode;
+      }
+      return catalogObj;
+    });
+
+    res.json({ success: true, data: filteredCatalogs });
   } catch (error) {
     logger.error('Error fetching public store catalogs:', error);
     res.status(500).json({ success: false, message: "Error fetching public store catalogs" });
@@ -349,7 +370,18 @@ const getPublicCatalogs = async (req, res) => {
       }
     }
 
-    res.json({ success: true, data: catalogs });
+    // Filter out share-related fields for non-store/non-admin users
+    const userRole = req.userRole || (req.user ? req.user.role : null);
+    const filteredCatalogs = catalogs.map(catalog => {
+      const catalogObj = catalog.toObject();
+      if (userRole !== 'store' && userRole !== 'admin' && userRole !== 'staff') {
+        delete catalogObj.shareLink;
+        delete catalogObj.qrCode;
+      }
+      return catalogObj;
+    });
+
+    res.json({ success: true, data: filteredCatalogs });
   } catch (error) {
     logger.error('Error fetching public catalogs:', error);
     res.status(500).json({ success: false, message: "Error fetching public catalogs" });
