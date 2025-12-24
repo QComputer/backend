@@ -36,6 +36,7 @@ class GuestUserService {
       const guestId = this.generateGuestId();
       const username = `guest_${guestId}`;
       
+      
       // Create guest user
       const guestUser = new userModel({
         username: username,
@@ -44,13 +45,14 @@ class GuestUserService {
         email: null,
         phone: null,
         moreInfo: 'Temporary guest account',
-        statusMain: 'active',
+        statusMain: 'online', // Use valid enum value
         statusCustom: 'browsing',
         avatar: null,
         image: null,
         locationLat: null,
         locationLng: null,
         shareLocation: false,
+        password: 'guest_temp_password', // Provide required password
         // Guest-specific fields
         isTemporary: true,
         sessionExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
@@ -62,7 +64,6 @@ class GuestUserService {
           deviceType: metadata.deviceType || 'unknown'
         }
       });
-
       await guestUser.save();
       
       logger.info(`Guest user created: ${username} (${guestUser._id})`);
