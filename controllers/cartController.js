@@ -26,14 +26,15 @@ const logger = winston.createLogger({
 const getCart = async (req, res) => {
   try {
     // Unified approach: use req.user for both guest and authenticated users
-    const userContext = req.user ? { userId: req.userId } : null;
+    let userContext;
     
-    // Handle anonymous users by using session-based carts
-    if (userContext && req.userId === 'anonymous') {
-      // For anonymous users, create a session-based cart
-      const sessionId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-      const cart = await cartService.getCart(sessionId);
-      return successResponse(res, cart, 'Guest cart retrieved successfully');
+    // Handle guest sessions from autoGuestLogin
+    if (req.sessionType === 'guest' && req.userId) {
+      userContext = { sessionId: req.userId };
+    } else if (req.user && req.userId) {
+      userContext = { userId: req.userId };
+    } else {
+      userContext = null;
     }
     
     if (!userContext) {
@@ -42,7 +43,7 @@ const getCart = async (req, res) => {
  
     const cart = await cartService.getCart(userContext);
     
-    logger.info(`Cart retrieved for user: ${req.userId} (${req.sessionType})`);
+    logger.info(`Cart retrieved for ${req.sessionType || 'user'}: ${req.userId}`);
     return successResponse(res, cart, 'Cart retrieved successfully');
   } catch (error) {
     logger.error('Error getting cart:', error);
@@ -56,15 +57,15 @@ const getCart = async (req, res) => {
 const addToCart = async (req, res) => {
   try {
     // Unified approach: use req.user for both guest and authenticated users
-    const userContext = req.user ? { userId: req.userId } : null;
+    let userContext;
     
-    // Handle anonymous users by using session-based carts
-    if (userContext && req.userId === 'anonymous') {
-      // For anonymous users, create a session-based cart
-      const sessionId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-      const { productId, quantity, catalogId } = req.body;
-      const cart = await cartService.addToCart(sessionId, productId, quantity || 1, catalogId);
-      return successResponse(res, cart, 'Item added to guest cart successfully');
+    // Handle guest sessions from autoGuestLogin
+    if (req.sessionType === 'guest' && req.userId) {
+      userContext = { sessionId: req.userId };
+    } else if (req.user && req.userId) {
+      userContext = { userId: req.userId };
+    } else {
+      userContext = null;
     }
     
     if (!userContext) {
@@ -79,7 +80,7 @@ const addToCart = async (req, res) => {
  
     const cart = await cartService.addToCart(userContext, productId, quantity || 1, catalogId);
      
-    logger.info(`Item added to cart: ${productId} from catalog ${catalogId}, user ${req.userId} (${req.sessionType})`);
+    logger.info(`Item added to cart: ${productId} from catalog ${catalogId}, ${req.sessionType || 'user'}: ${req.userId}`);
     return successResponse(res, cart, 'Item added to cart successfully');
   } catch (error) {
     logger.error('Error adding to cart:', error);

@@ -8,15 +8,16 @@ import {
   migrateGuestCart,
 } from "../controllers/cartController.js";
 import { userCartMiddleware, unifiedAuth } from "../middleware/auth.js";
+import { autoGuestLogin } from "../middleware/autoGuestLogin.js";
 
 const cartRouter = express.Router();
 
-// Unified cart routes (handle both authenticated users and guests)
-// Now using unified authentication - all sessions are treated as authenticated
-cartRouter.get("/", unifiedAuth, getCart);
+// Public cart routes (allow unauthenticated users with auto guest login)
+cartRouter.get("/", autoGuestLogin, getCart);
 
-cartRouter.post("/", unifiedAuth, addToCart);
+cartRouter.post("/", autoGuestLogin, addToCart);
 
+// Protected cart routes (require authentication for modifications)
 cartRouter.delete("/:productId", unifiedAuth, removeFromCart);
 
 cartRouter.put("/", unifiedAuth, updateCart);
