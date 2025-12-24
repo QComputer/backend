@@ -18,30 +18,44 @@ export const autoGuestLogin = async (req, res, next) => {
     // Check for existing guest session from headers, cookies, or query params
     let sessionId = req.headers['x-session-id'] ||
                    req.cookies?.guest_session ||
-                   req.query?.session_id;
+                   req.query?.session_id ||
+                   req.body?.sessionId;
 
     let session = null;
 
     // If session ID exists, try to find the session
     if (sessionId) {
-      session = await sessionModel.findByToken(sessionId);
+      try {
+        session = await sessionModel.findByToken(sessionId);
 
-      if (session) {
-        // Check if session is expired
-        if (session.isExpired()) {
-          console.log(`❌ Expired guest session found: ${sessionId}`);
-          session = null;
+        if (session) {
+          // Check if session is expired
+          if (session.isExpired()) {
+            console.log(`❌ Expired guest session found: ${sessionId}`);
+            session = null;
+          } else {
+            console.log(`🔄 Reusing existing guest session: ${sessionId}`);
+            // Refresh session expiration
+            await session.extend();
+          }
         } else {
-          console.log(`🔄 Reusing existing guest session: ${sessionId}`);
-          // Refresh session expiration
-          await session.extend();
+          console.log(`❌ Guest session not found: ${sessionId}`);
         }
+      } catch (error) {
+        console.error(`❌ Error finding guest session ${sessionId}:`, error.message);
+        session = null;
       }
     }
 
     // Create new guest session if none exists or if expired
     if (!session) {
-      console.log('🆕 Creating new guest session');
+      console.log('🆕 Creating new guest session for request:', {
+        sessionId: sessionId || 'none',
+        hasCookie: !!req.cookies?.guest_session,
+        hasHeader: !!req.headers['x-session-id'],
+        hasQuery: !!req.query?.session_id,
+        hasBody: !!req.body?.sessionId
+      });
 
       // Extract metadata from request
       const metadata = {
@@ -67,7 +81,9 @@ export const autoGuestLogin = async (req, res, next) => {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
-          maxAge: 24 * 60 * 60 * 1000 // 24 hours
+          maxAge: 24 * 60 * 60 * 1000, // 24 hours
+          path: '/',
+          domain: process.env.COOKIE_DOMAIN || undefined
         });
 
         console.log(`🔐 New guest session created: ${session.sessionId} for user ${guestResult.user.username}`);
@@ -79,7 +95,9 @@ export const autoGuestLogin = async (req, res, next) => {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
-          maxAge: 24 * 60 * 60 * 1000
+          maxAge: 24 * 60 * 60 * 1000, // 24 hours
+          path: '/',
+          domain: process.env.COOKIE_DOMAIN || undefined
         });
         console.log(`🔐 Fallback session created: ${session.sessionId}`);
       }
@@ -106,7 +124,7 @@ export const autoGuestLogin = async (req, res, next) => {
     req.userRole = 'guest';
     req.userId = session.sessionId;
 
-    console.log(`🔄 Guest session unified: ${session.sessionId} as authenticated guest`);
+    console.log(`🔄 Guest session unified: ${session.sessionId} as authenticated guest for user ${req.user.username}`);
 
     // Continue to next middleware
     next();
