@@ -9,7 +9,7 @@ import imageModel from "../models/imageModel.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const imageServerUrl = process.env.IMAGE_SERVER_URL || 'http://localhost:3001';
+const imageServerUrl = process.env.IMAGE_SERVER_URL || 'https://sefr-image.runflare.run';
 
 if (!imageServerUrl) {
   throw new Error('IMAGE_SERVER_URL environment variable is required');
