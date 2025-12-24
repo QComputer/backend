@@ -82,9 +82,6 @@ export const configureCORS = (app) => {
 
   // Apply CORS middleware
   app.use(cors(corsOptions));
-
-  // Handle preflight requests explicitly
-  app.options('*', cors(corsOptions));
 };
 
 export default configureCORS;
