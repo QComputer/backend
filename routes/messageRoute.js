@@ -12,20 +12,20 @@ import {
   deleteMessage,
   searchMessages,
 } from "../controllers/messageController.js";
-import { unifiedAuth } from "../middleware/auth.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const messageRouter = express.Router();
 
-messageRouter.post("/send", unifiedAuth, sendMessage);
-messageRouter.get("/search", unifiedAuth, searchMessages);
-messageRouter.get("/conversations", unifiedAuth, getConversations);
-messageRouter.get("/all-conversations", unifiedAuth, getAllConversations);
-messageRouter.get("/conversation/:otherUserId", unifiedAuth, getMessages);
-messageRouter.get("/group/:groupId", unifiedAuth, getGroupMessages);
-messageRouter.get("/unread", unifiedAuth, getUnreadMessages);
-messageRouter.post("/read", unifiedAuth, markMessagesAsRead);
-messageRouter.get("/:id", unifiedAuth, getMessageById);
-messageRouter.put("/:id/read", unifiedAuth, markMessageAsRead);
-messageRouter.delete("/:id", unifiedAuth, deleteMessage);
+messageRouter.post("/send", authMiddleware({ requireAuth: true }), sendMessage);
+messageRouter.get("/search", authMiddleware({ requireAuth: true }), searchMessages);
+messageRouter.get("/conversations", authMiddleware({ requireAuth: true }), getConversations);
+messageRouter.get("/all-conversations", authMiddleware({ requireAuth: true }), getAllConversations);
+messageRouter.get("/conversation/:otherUserId", authMiddleware({ requireAuth: true }), getMessages);
+messageRouter.get("/group/:groupId", authMiddleware({ requireAuth: true }), getGroupMessages);
+messageRouter.get("/unread", authMiddleware({ requireAuth: true }), getUnreadMessages);
+messageRouter.post("/read", authMiddleware({ requireAuth: true }), markMessagesAsRead);
+messageRouter.get("/:id", authMiddleware({ requireAuth: true }), getMessageById);
+messageRouter.put("/:id/read", authMiddleware({ requireAuth: true }), markMessageAsRead);
+messageRouter.delete("/:id", authMiddleware({ requireAuth: true }), deleteMessage);
 
 export default messageRouter;

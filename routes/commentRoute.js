@@ -6,14 +6,14 @@ import {
   updateComment,
   deleteComment,
 } from "../controllers/commentController.js";
-import { unifiedAuth } from "../middleware/auth.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const commentRouter = express.Router();
 
-commentRouter.post("/add", unifiedAuth, addComment);
-commentRouter.get("/product/:productId", unifiedAuth, getProductComments);
-commentRouter.get("/user/:userId", unifiedAuth, getUserComments);
-commentRouter.put("/:id", unifiedAuth, updateComment);
-commentRouter.delete("/:id", unifiedAuth, deleteComment);
+commentRouter.post("/add", authMiddleware({ requireAuth: true }), addComment);
+commentRouter.get("/product/:productId", authMiddleware({ requireAuth: true }), getProductComments);
+commentRouter.get("/user/:userId", authMiddleware({ requireAuth: true }), getUserComments);
+commentRouter.put("/:id", authMiddleware({ requireAuth: true }), updateComment);
+commentRouter.delete("/:id", authMiddleware({ requireAuth: true }), deleteComment);
 
 export default commentRouter;

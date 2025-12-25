@@ -66,11 +66,11 @@ const getProduct = async (req, res) => {
   }
 };
 
-// add product item
+// add product item to products list
 const addProduct = async (req, res) => {
   try {
     const userId = req.userId;
-    
+
     // Validate required fields
     if (!req.body.name) {
       return res.status(400).json({
@@ -79,7 +79,7 @@ const addProduct = async (req, res) => {
         field: "name"
       });
     }
-    
+
     if (!req.body.price) {
       return res.status(400).json({
         success: false,
@@ -87,7 +87,7 @@ const addProduct = async (req, res) => {
         field: "price"
       });
     }
-    
+
     if (req.body.price <= 0) {
       return res.status(400).json({
         success: false,
@@ -95,7 +95,7 @@ const addProduct = async (req, res) => {
         field: "price"
       });
     }
-    
+
     // Fetch user to get username
     const user = await userModel.findById(userId);
     if (!user) {
@@ -104,7 +104,7 @@ const addProduct = async (req, res) => {
         message: "User not found",
       });
     }
-    
+
     if (user.role !== "store") {
       return res.status(403).json({
         success: false,
@@ -167,7 +167,7 @@ const addProduct = async (req, res) => {
       body: req.body,
       userId: req.userId
     });
-    
+
     // Handle specific MongoDB validation errors
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(err => err.message);
@@ -177,7 +177,7 @@ const addProduct = async (req, res) => {
         errors: errors
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: error.message || "Error adding product",
@@ -189,9 +189,9 @@ const addProduct = async (req, res) => {
 //  product list for store
 const listProduct = async (req, res) => {
   try {
-     
+
     const userId = req.userId;
-     
+
     const products = await productModel
       .find({ store: userId })
       .populate('category', 'name'); // Populate category name for filtering
@@ -220,7 +220,7 @@ const publicListProduct = async (req, res) => {
 const removeProduct = async (req, res) => {
   try {
     const product = await productModel.findById(req.params.id);
-    if (!product || product.store.toString() !== req.userId) {
+    if (!product || !(product.store.toString() === req.userId || req.userRole === 'admin')) {
       return res
         .status(404)
         .json({ success: false, message: "Product not found in your list" });
@@ -235,11 +235,10 @@ const removeProduct = async (req, res) => {
   }
 };
 
-// edit product item
+// edit product item (admin or owner)
 const editProduct = async (req, res) => {
   try {
     const {
-      storeId,
       name,
       description,
       price,
@@ -315,7 +314,7 @@ const editProduct = async (req, res) => {
     if (weight) product.weight = weight;
     if (dimensions) product.dimensions = dimensions;
     if (image) product.image = image;
-    
+
     product.updatedAt = new Date();
 
     const updatedProduct = await product.save();
@@ -338,7 +337,7 @@ const getAllProducts = async (req, res) => {
     const userId = req.userId;
     const userRole = req.userRole;
     console.log('getAllProducts called with userId:', userId, 'with role:', userRole);
-    
+
     let query = {};
     if (userRole === 'admin') {
       // Admin sees all products
@@ -427,8 +426,8 @@ const getPublicProduct = async (req, res) => {
     let categoryName = 'uncategorized';
     if (category) {
       categoryName = category.name;
-    } 
-    
+    }
+
     // Get store information (public data only)
     const store = await userModel.findById(product.store);
     let storeUsername = 'unknown';
@@ -457,20 +456,20 @@ const getPublicProducts = async (req, res) => {
     const { category, search, limit = 50, page = 1 } = req.query;
     const { storeId } = req.params;
     let query = { available: true }; // Only show available products
-    
+
     // Filter by store if provided
     if (storeId) {
       query.store = storeId;
     } else {
-    res.json({ success: false, message: "storeId is reqiered." });
-      
+      res.json({ success: false, message: "storeId is reqiered." });
+
     }
-    
+
     // Filter by category if provided
     if (category) {
       query.category = category;
     }
-    
+
     // Search by name or description if provided
     if (search) {
       query.$or = [
@@ -479,9 +478,9 @@ const getPublicProducts = async (req, res) => {
         { tags: { $in: [new RegExp(search, 'i')] } }
       ];
     }
-    
+
     const skip = (page - 1) * limit;
-    
+
     const products = await productModel
       .find(query)
       .populate('store', 'name username') // Populate store with name and username
@@ -489,9 +488,9 @@ const getPublicProducts = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
-    
+
     const total = await productModel.countDocuments(query);
-    
+
     res.json({
       success: true,
       data: products,
@@ -790,7 +789,7 @@ const getProductsWithCategories = async (req, res) => {
   try {
     const userId = req.userId;
     const userRole = req.userRole;
-    
+
     // Fetch products based on user role
     let productsQuery = {};
     if (userRole === 'admin') {
@@ -800,13 +799,13 @@ const getProductsWithCategories = async (req, res) => {
     } else {
       productsQuery = { available: true };
     }
-    
+
     const products = await productModel
       .find(productsQuery)
       .populate('store', 'name username')
       .populate('category', 'name')
       .sort({ createdAt: -1 });
-    
+
     // Fetch categories based on user role
     let categoriesQuery = {};
     if (userRole === 'store') {
@@ -816,9 +815,9 @@ const getProductsWithCategories = async (req, res) => {
     } else {
       categoriesQuery = { isGlobal: true };
     }
-    
+
     const categories = await categoryModel.find(categoriesQuery).sort({ name: 1 });
-    
+
     res.json({
       success: true,
       data: { products, categories }

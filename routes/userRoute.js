@@ -26,9 +26,10 @@ import {
 } from "../controllers/userController.js";
 
 import {
-  unifiedAuth,
+  authMiddleware,
   adminOnly,
-  ownerOnly
+  ownerOnly,
+  userOrGuest
 } from "../middleware/auth.js";
 
 import multer from "multer";
@@ -55,24 +56,24 @@ userRouter.post("/login", loginUser);
 userRouter.post("/guest-login", guestLogin);
 
 // User account and profile
-userRouter.get("/account", unifiedAuth, userAccount);
-userRouter.get("/profile", unifiedAuth, userProfile); // user endpoint to see their profile
-//userRouter.get("/menus", unifiedAuth, userMenus); // user endpoint to see their catalog
-userRouter.post("/update-profile", unifiedAuth, updateProfile);
-userRouter.post("/update-status", unifiedAuth, updateStatus);
-userRouter.post("/update-status-custom", unifiedAuth, updateStatusCustom);
-//userRouter.post("/update-menu/:menuId", unifiedAuth, updateMenu); // Temporarily disabled
-userRouter.post("/change-password", unifiedAuth, changePassword);
+userRouter.get("/account", authMiddleware({ requireAuth: true }), userAccount);
+userRouter.get("/profile", authMiddleware({ requireAuth: true }), userProfile); // user endpoint to see their profile
+//userRouter.get("/menus", authMiddleware({ requireAuth: true }), userMenus); // user endpoint to see their catalog
+userRouter.post("/update-profile", authMiddleware({ requireAuth: true }), updateProfile);
+userRouter.post("/update-status", authMiddleware({ requireAuth: true }), updateStatus);
+userRouter.post("/update-status-custom", authMiddleware({ requireAuth: true }), updateStatusCustom);
+//userRouter.post("/update-menu/:menuId", authMiddleware({ requireAuth: true }), updateMenu); // Temporarily disabled
+userRouter.post("/change-password", authMiddleware({ requireAuth: true }), changePassword);
 //// Image uploads
-userRouter.post("/upload-profile-image/:targetId", unifiedAuth, ownerOnly("targetId"), upload.single("image"), uploadProfileImage);
-userRouter.post("/upload-avatar-image/:targetId", unifiedAuth, ownerOnly("targetId"), upload.single("image"), uploadAvatarImage);
+userRouter.post("/upload-profile-image/:targetId", authMiddleware({ requireAuth: true }), ownerOnly("targetId"), upload.single("image"), uploadProfileImage);
+userRouter.post("/upload-avatar-image/:targetId", authMiddleware({ requireAuth: true }), ownerOnly("targetId"), upload.single("image"), uploadAvatarImage);
 //// Social features
-userRouter.post("/follow", unifiedAuth, toggleFollow);
-userRouter.post("/friend", unifiedAuth, toggleFriend);
+userRouter.post("/follow", authMiddleware({ requireAuth: true }), toggleFollow);
+userRouter.post("/friend", authMiddleware({ requireAuth: true }), toggleFriend);
 //// Favorites
-userRouter.post("/favorites/add", unifiedAuth, addToFavorites);
-userRouter.post("/favorites/remove", unifiedAuth, removeFromFavorites);
-userRouter.get("/favorites/:userId", unifiedAuth, getFavorites);
+userRouter.post("/favorites/add", authMiddleware({ requireAuth: true }), addToFavorites);
+userRouter.post("/favorites/remove", authMiddleware({ requireAuth: true }), removeFromFavorites);
+userRouter.get("/favorites/:userId", authMiddleware({ requireAuth: true }), getFavorites);
 
 
 // Admin routes
@@ -85,7 +86,7 @@ userRouter.get("/admin/drivers", adminOnly, getDrivers);
 userRouter.get("/admin/stores", adminOnly, getStores);
 //// All users
 userRouter.get("/admin/all", adminOnly, getAdminAllUsers);
-userRouter.get("/all", unifiedAuth, getAllUsers);
+userRouter.get("/all", authMiddleware({ requireAuth: true }), getAllUsers);
 
 // Public routes
 userRouter.get("/public/profile/:targetId", getPublicProfile); // Public endpoint, no auth required, 

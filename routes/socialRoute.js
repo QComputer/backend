@@ -9,17 +9,17 @@ import {
   getMutualFriends,
   getFriendSuggestions
 } from "../controllers/socialController.js";
-import { unifiedAuth } from "../middleware/auth.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const socialRouter = express.Router();
 
-socialRouter.post("/follow", unifiedAuth, followUser);
-socialRouter.post("/unfollow", unifiedAuth, unfollowUser);
-socialRouter.post("/add-friend", unifiedAuth, addFriend);
-socialRouter.post("/remove-friend", unifiedAuth, removeFriend);
-socialRouter.get("/relationships", unifiedAuth, getSocialRelationships);
-socialRouter.get("/status/:targetUserId", unifiedAuth, getRelationshipStatus);
-socialRouter.get("/mutual-friends/:targetUserId", unifiedAuth, getMutualFriends);
-socialRouter.get("/friend-suggestions", unifiedAuth, getFriendSuggestions);
+socialRouter.post("/follow", authMiddleware({ requireAuth: true }), followUser);
+socialRouter.post("/unfollow", authMiddleware({ requireAuth: true }), unfollowUser);
+socialRouter.post("/add-friend", authMiddleware({ requireAuth: true }), addFriend);
+socialRouter.post("/remove-friend", authMiddleware({ requireAuth: true }), removeFriend);
+socialRouter.get("/relationships", authMiddleware({ requireAuth: true }), getSocialRelationships);
+socialRouter.get("/status/:targetUserId", authMiddleware({ requireAuth: true }), getRelationshipStatus);
+socialRouter.get("/mutual-friends/:targetUserId", authMiddleware({ requireAuth: true }), getMutualFriends);
+socialRouter.get("/friend-suggestions", authMiddleware({ requireAuth: true }), getFriendSuggestions);
 
 export default socialRouter;

@@ -13,27 +13,27 @@ import {
   getCatalogDesigns,
   createCatalogDesign
 } from "../controllers/catalogController.js";
-import { unifiedAuth } from "../middleware/auth.js";
+import { authMiddleware, adminOnly, staffOnly,  userOrGuest, ownerOnly } from "../middleware/auth.js";
 import { autoGuestLogin } from "../middleware/autoGuestLogin.js";
 
 const catalogRouter = express.Router();
 
-// Protected routes (authentication required)
-catalogRouter.post("/create", unifiedAuth, createCatalog);
-catalogRouter.post("/duplicate/:catalogId", unifiedAuth, duplicateCatalog);
-catalogRouter.get("/list", unifiedAuth, getCatalogs);
-catalogRouter.get("/designs", unifiedAuth, getCatalogDesigns);
-catalogRouter.post("/design", unifiedAuth, createCatalogDesign);
+// Protected routes 
+catalogRouter.post("/create", staffOnly, createCatalog);
+catalogRouter.post("/duplicate/:catalogId", authMiddleware, duplicateCatalog);
+catalogRouter.get("/list", authMiddleware, ownerOnly, getCatalogs);
+catalogRouter.get("/designs", staffOnly, getCatalogDesigns);
+catalogRouter.post("/design", adminOnly, createCatalogDesign);
 
-// Public routes (no authentication required)
-catalogRouter.get("/public-list", autoGuestLogin, getPublicCatalogs);
-catalogRouter.get("/public/:catalogId", autoGuestLogin, getPublicCatalog);
-catalogRouter.get("/public/list/:userId", autoGuestLogin, getPublicUserCatalogs);
+// Public routes  (guest alloewd)
+catalogRouter.get("/public-list", userOrGuest, getPublicCatalogs);
+catalogRouter.get("/public/:catalogId", userOrGuest, autoGuestLogin, getPublicCatalog); // unauthenticated users allowed
+catalogRouter.get("/public/list/:userId", userOrGuest, getPublicUserCatalogs);
 
 // Parameterized routes (must come last)
-catalogRouter.get("/:catalogId", unifiedAuth, getCatalog);
-catalogRouter.put("/:catalogId", unifiedAuth, updateCatalog);
-catalogRouter.delete("/:catalogId", unifiedAuth, deleteCatalog);
-catalogRouter.get("/user/:userId", unifiedAuth, getUserCatalogs);
+catalogRouter.get("/:catalogId", staffOnly, ownerOnly, getCatalog);
+catalogRouter.put("/:catalogId", staffOnly, ownerOnly, updateCatalog);
+catalogRouter.delete("/:catalogId", staffOnly, ownerOnly, deleteCatalog);
+catalogRouter.get("/user/:userId", staffOnly, ownerOnly, getUserCatalogs);
 
 export default catalogRouter;

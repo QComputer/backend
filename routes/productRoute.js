@@ -19,30 +19,30 @@ import {
   removeProductReaction,
   getProductReaction,
 } from "../controllers/productController.js";
-import {adminOnly, unifiedAuth } from "../middleware/auth.js";
+import {adminOnly, userOrGuest, storeOnly } from "../middleware/auth.js";
+import { autoGuestLogin } from "../middleware/autoGuestLogin.js";
 
 const productRouter = express.Router();
 
-// Public routes (no authentication required)
-productRouter.get("/public-list/:storeId", getPublicProducts); // Get all public products with filtering
-productRouter.get("/public/:productId", getPublicProduct); // Get single public product
-//productRouter.get("/public-catalog/:catalogId", getPublicProductsByCatalog); // Get products for public catalog
-
-
 // Protected routes (authentication required)
-productRouter.get("/all", unifiedAuth, adminOnly, getAllProducts); // admin only
-productRouter.get("/list",unifiedAuth, listProduct); // owner store
-productRouter.get("/products-with-categories", unifiedAuth, getProductsWithCategories); // Get products and categories combined
-productRouter.post("/cart-products", unifiedAuth, getCartProducts);
-productRouter.post("/add", unifiedAuth, addProduct);
-productRouter.get("/store/:username", unifiedAuth, publicListProduct);
-productRouter.get("/:id", unifiedAuth, getProduct);
-productRouter.delete("/:id", unifiedAuth, removeProduct);
-productRouter.put("/:id", unifiedAuth, editProduct);
+productRouter.get("/all", adminOnly, getAllProducts); // admin only
+productRouter.get("/list", storeOnly, listProduct); // owner store
+productRouter.get("/products-with-categories", userOrGuest, getProductsWithCategories); // Get products and categories combined (optimized for products page)
+//productRouter.post("/cart-products", authMiddleware, getCartProducts);
+productRouter.post("/add", storeOnly, addProduct);
+productRouter.get("/store/:username", userOrGuest, publicListProduct);
+productRouter.get("/:id", storeOnly, getProduct);
+productRouter.delete("/:id", storeOnly, removeProduct);
+productRouter.put("/:id", storeOnly, editProduct);
 
 // Reaction routes
-productRouter.post("/reaction", unifiedAuth, addProductReaction);
-productRouter.delete("/reaction", unifiedAuth, removeProductReaction);
-productRouter.get("/reaction/:userId/:productId", unifiedAuth, getProductReaction);
+productRouter.post("/reaction", userOrGuest, addProductReaction);
+productRouter.delete("/reaction", adminOnly, removeProductReaction);
+productRouter.get("/reaction/:userId/:productId", userOrGuest, getProductReaction);
+
+// Public routes (no authentication required)
+productRouter.get("/public-list/:storeId", userOrGuest, autoGuestLogin, getPublicProducts); // Get all public products with filtering
+productRouter.get("/public/:productId", userOrGuest, autoGuestLogin, getPublicProduct); // Get single public product
+//productRouter.get("/public-catalog/:catalogId", userOrGuest, autoGuestLogin, getPublicProductsByCatalog); // Get products for public catalog
 
 export default productRouter;

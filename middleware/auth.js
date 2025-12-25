@@ -8,6 +8,14 @@ import { standardError } from '../utils/apiUtils.js';
 import { errorResponse, unauthorizedResponse, forbiddenResponse } from '../utils/apiResponse.js';
 
 /**
+ * Combined authentication and authorization middleware
+ * @param {Object} options - Configuration options
+ */
+export const authAndAuthorize = (options = {}) => {
+  return authMiddleware(options);
+};
+
+/**
  * Unified authentication middleware with configurable options
  * @param {Object} options - Configuration options
  * @param {boolean} options.requireAuth - Whether authentication is required (default: true)
@@ -21,7 +29,6 @@ export const authMiddleware = (options = {}) => {
     requireAuth = true,
     allowedRoles = [],
     allowGuest = false,
-    sessionType = 'user'
   } = options;
 
   return async (req, res, next) => {
@@ -50,24 +57,25 @@ export const authMiddleware = (options = {}) => {
       }
 
       // If user auth failed and guest is allowed, try guest session
-      if (!authResult && allowGuest && sessionType !== 'user') {
+      if (!authResult && allowGuest) {
         authResult = await validateGuestSession(req);
       }
 
       // Handle authentication result - UNIFIED APPROACH
       // All valid sessions (guest or user) are now considered authenticated
       if (authResult) {
-        req.user = authResult.user;
+        req.user = authResult.user || null;
+        req.userId = authResult.userId || null;
+        req.sessionId = authResult.sessionId || null;
         req.userRole = authResult.role;
-        req.userId = authResult.id;
         req.token = authResult.token;
         req.authenticated = true; // ALL valid sessions are authenticated
-        req.sessionType = authResult.sessionType;
+        req.isGuest = !!authResult.isGuest;
 
         // Log successful authentication with enhanced monitoring
         const logData = {
-          sessionType: authResult.sessionType,
-          userId: authResult.id,
+          userId: authResult.id || 'not registered',
+          sessionId: authResult.sessionId || null,
           method: req.method,
           path: req.originalUrl || req.path,
           ip: req.ip || req.connection?.remoteAddress,
@@ -126,9 +134,8 @@ async function validateUserToken(token) {
     return {
       user: decoded,
       role: decoded.role,
-      id: decoded.id,
+      userId: decoded.id,
       token: token,
-      sessionType: 'user'
     };
   } catch (error) {
     console.error('❌ Token verification failed:', error.message);
@@ -145,6 +152,7 @@ async function validateGuestSession(req) {
   try {
     // Get session ID from x-session-id header (new approach)
     const guestSessionId = req.headers['x-session-id'] ||
+                          req.headers['guest-session-id'] ||
                           req.query.sessionId ||
                           req.body.sessionId ||
                           req.cookies?.guest_session; // Keep for backward compatibility
@@ -177,16 +185,10 @@ async function validateGuestSession(req) {
     );
 
     return {
-      user: {
-        id: session.sessionId,
-        role: 'guest',
-        username: `guest_${session.sessionId.substring(0, 8)}`,
-        isTemporary: true
-      },
+      isGuest: true,
       role: 'guest',
-      id: session.sessionId,
+      sessionId: session.sessionId,
       token: token,
-      sessionType: 'guest'
     };
   } catch (error) {
     console.error('❌ Guest session validation failed:', error.message);
@@ -204,20 +206,11 @@ export const adminOnly = authMiddleware({
 });
 
 /**
- * Store owner authorization middleware
- */
-export const storeOwnerOnly = authMiddleware({
-  requireAuth: true,
-  allowedRoles: ['store'],
-  allowGuest: false
-});
-
-/**
  * Customer authorization middleware
  */
 export const customerOnly = authMiddleware({
   requireAuth: true,
-  allowedRoles: ['customer'],
+  allowedRoles: ['customer','admin'],
   allowGuest: false
 });
 
@@ -226,7 +219,16 @@ export const customerOnly = authMiddleware({
  */
 export const driverOnly = authMiddleware({
   requireAuth: true,
-  allowedRoles: ['driver'],
+  allowedRoles: ['driver','admin'],
+  allowGuest: false
+});
+
+/**
+ * Store owner authorization middleware
+ */
+export const storeOnly = authMiddleware({
+  requireAuth: true,
+  allowedRoles: ['store', 'admin'],
   allowGuest: false
 });
 
@@ -235,19 +237,8 @@ export const driverOnly = authMiddleware({
  */
 export const staffOnly = authMiddleware({
   requireAuth: true,
-  allowedRoles: ['admin', 'store'],
+  allowedRoles: ['admin', 'store', 'staff', 'driver'],
   allowGuest: false
-});
-
-/**
- * Guest session middleware (allows guest sessions)
- * Now treats guest sessions as authenticated for unified access
- */
-export const guestSession = authMiddleware({
-  requireAuth: false,
-  allowedRoles: [],
-  allowGuest: true,
-  sessionType: 'both'
 });
 
 /**
@@ -258,18 +249,6 @@ export const userOrGuest = authMiddleware({
   requireAuth: false,
   allowedRoles: [],
   allowGuest: true,
-  sessionType: 'both'
-});
-
-/**
- * Unified authentication middleware for all user types
- * Treats both guest and authenticated users as authenticated
- */
-export const unifiedAuth = authMiddleware({
-  requireAuth: false,
-  allowedRoles: [],
-  allowGuest: true,
-  sessionType: 'both'
 });
 
 /**
@@ -337,25 +316,6 @@ export const authorizeRoles = (roles) => {
 };
 
 /**
- * Combined authentication and authorization middleware
- * @param {Object} options - Configuration options
- */
-export const authAndAuthorize = (options = {}) => {
-  return authMiddleware(options);
-};
-
-/**
- * Guest cart middleware (specific for guest cart operations)
- * Now unified to treat guest sessions as authenticated
- */
-export const guestCartMiddleware = authMiddleware({
-  requireAuth: false,
-  allowedRoles: [],
-  allowGuest: true,
-  sessionType: 'guest'
-});
-
-/**
  * User cart middleware (specific for authenticated user cart operations)
  * Now unified to work with both guest and user sessions
  */
@@ -363,16 +323,4 @@ export const userCartMiddleware = authMiddleware({
   requireAuth: false, // Changed to false to allow guest sessions
   allowedRoles: ['customer', 'store', 'admin', 'guest'], // Added guest role
   allowGuest: true,
-  sessionType: 'both'
-});
-
-/**
- * Public API middleware (no authentication required)
- * Now supports unified session handling for better guest experience
- */
-export const publicMiddleware = authMiddleware({
-  requireAuth: false,
-  allowedRoles: [],
-  allowGuest: true, // Changed to true to support guest sessions
-  sessionType: 'both'
 });

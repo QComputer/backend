@@ -4,7 +4,6 @@ import productModel from "../models/productModel.js";
 import catalogDesignModel from "../models/catalogDesignModel.js";
 import winston from "winston";
 import qrcode from "qrcode";
-import guestUserService from "../services/guestUserService.js";
 
 const logger = winston.createLogger({
   level: 'info',
@@ -265,21 +264,10 @@ const getPublicCatalog = async (req, res) => {
       return res.status(404).json({ success: false, message: "Catalog not found or not public" });
     }
 
-    // If this is a guest user, ensure they have a guest user account
+    // Guest sessions are now handled through unified authentication
+    // No need for separate guest user creation
     if (!req.userId && req.guestSession) {
-      try {
-        const metadata = {
-          ipAddress: req.ip || req.connection?.remoteAddress,
-          userAgent: req.headers['user-agent'],
-          referrer: req.headers['referer'],
-          deviceType: req.guestSession.metadata?.deviceType || 'unknown'
-        };
-        
-        const guestResult = await guestUserService.getOrCreateGuestUser(req.guestSession.sessionId, metadata);
-        logger.info(`Guest user associated with public catalog access: ${guestResult.user.username}`);
-      } catch (guestError) {
-        logger.error('Failed to associate guest user with catalog access:', guestError);
-      }
+      logger.info(`Guest session ${req.guestSession.sessionId} accessing public catalog`);
     }
 
     // Filter out share-related fields for non-store/non-admin users
@@ -311,21 +299,10 @@ const getPublicUserCatalogs = async (req, res) => {
       .populate('store', 'name username')
       .sort({ createdAt: -1 });
 
-    // If this is a guest user, ensure they have a guest user account
+    // Guest sessions are now handled through unified authentication
+    // No need for separate guest user creation
     if (!req.userId && req.guestSession) {
-      try {
-        const metadata = {
-          ipAddress: req.ip || req.connection?.remoteAddress,
-          userAgent: req.headers['user-agent'],
-          referrer: req.headers['referer'],
-          deviceType: req.guestSession.metadata?.deviceType || 'unknown'
-        };
-        
-        const guestResult = await guestUserService.getOrCreateGuestUser(req.guestSession.sessionId, metadata);
-        logger.info(`Guest user associated with public store catalogs access: ${guestResult.user.username}`);
-      } catch (guestError) {
-        logger.error('Failed to associate guest user with store catalogs access:', guestError);
-      }
+      logger.info(`Guest session ${req.guestSession.sessionId} accessing public store catalogs`);
     }
 
     // Filter out share-related fields for non-store/non-admin users
@@ -353,21 +330,10 @@ const getPublicCatalogs = async (req, res) => {
       .populate('owner', 'name username')
       .populate('products.product', 'name price image store');
 
-    // If this is a guest user, ensure they have a guest user account
+    // Guest sessions are now handled through unified authentication
+    // No need for separate guest user creation
     if (!req.userId && req.guestSession) {
-      try {
-        const metadata = {
-          ipAddress: req.ip || req.connection?.remoteAddress,
-          userAgent: req.headers['user-agent'],
-          referrer: req.headers['referer'],
-          deviceType: req.guestSession.metadata?.deviceType || 'unknown'
-        };
-        
-        const guestResult = await guestUserService.getOrCreateGuestUser(req.guestSession.sessionId, metadata);
-        logger.info(`Guest user associated with public catalogs browsing: ${guestResult.user.username}`);
-      } catch (guestError) {
-        logger.error('Failed to associate guest user with catalogs browsing:', guestError);
-      }
+      logger.info(`Guest session ${req.guestSession.sessionId} browsing public catalogs`);
     }
 
     // Filter out share-related fields for non-store/non-admin users

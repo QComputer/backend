@@ -1,6 +1,5 @@
 import sessionModel from '../models/sessionModel.js';
 import { standardError } from '../utils/apiUtils.js';
-import guestUserService from '../services/guestUserService.js';
 
 /**
  * Auto Guest Login Middleware
@@ -14,12 +13,11 @@ export const autoGuestLogin = async (req, res, next) => {
       console.log(`✅ User already authenticated: ${req.user.id} (${req.sessionType})`);
       return next();
     }
-
     // Check for existing guest session from headers, cookies, or query params
     let sessionId = req.headers['x-session-id'] ||
-                   req.cookies?.guest_session ||
-                   req.query?.session_id ||
-                   req.body?.sessionId;
+      req.cookies?.guest_session ||
+      req.query?.session_id ||
+      req.body?.sessionId;
 
     let session = null;
 
@@ -65,42 +63,20 @@ export const autoGuestLogin = async (req, res, next) => {
         deviceType: getDeviceType(req.headers['user-agent'])
       };
 
-      try {
-        // Create guest user and session
-        const guestResult = await guestUserService.getOrCreateGuestUser(null, metadata);
-        
-        // Create session model with guest user association
-        session = await sessionModel.createGuestSession({
-          ...metadata,
-          guestUserId: guestResult.user._id,
-          guestUsername: guestResult.user.username
-        });
+      // Create guest session directly
+      session = await sessionModel.createGuestSession(metadata);
 
-        // Set session cookie for backward compatibility
-        res.cookie('guest_session', session.sessionId, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 24 * 60 * 60 * 1000, // 24 hours
-          path: '/',
-          domain: process.env.COOKIE_DOMAIN || undefined
-        });
+      // Set session cookie for backward compatibility
+      res.cookie('guest_session', session.sessionId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        path: '/',
+        domain: process.env.COOKIE_DOMAIN || undefined
+      });
 
-        console.log(`🔐 New guest session created: ${session.sessionId} for user ${guestResult.user.username}`);
-      } catch (error) {
-        console.error('❌ Failed to create guest user:', error.message);
-        // Fallback to basic session creation if guest user creation fails
-        session = await sessionModel.createGuestSession(metadata);
-        res.cookie('guest_session', session.sessionId, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 24 * 60 * 60 * 1000, // 24 hours
-          path: '/',
-          domain: process.env.COOKIE_DOMAIN || undefined
-        });
-        console.log(`🔐 Fallback session created: ${session.sessionId}`);
-      }
+      console.log(`🔐 New guest session created: ${session.sessionId}`);
     }
 
     // Attach session information to request
@@ -115,14 +91,15 @@ export const autoGuestLogin = async (req, res, next) => {
     // Set unified authentication flags
     req.authenticated = true; // Guest sessions are now considered authenticated
     req.sessionType = 'guest';
+    req.userRole = 'guest';
+    req.userId = null;
     req.user = {
-      id: session.sessionId,
+      id: null,
+      session: session,
       role: 'guest',
       username: `guest_${session.sessionId.substring(0, 8)}`,
       isTemporary: true
     };
-    req.userRole = 'guest';
-    req.userId = session.sessionId;
 
     console.log(`🔄 Guest session unified: ${session.sessionId} as authenticated guest for user ${req.user.username}`);
 
@@ -146,7 +123,7 @@ function getDeviceType(userAgent) {
   const userAgentLower = userAgent.toLowerCase();
 
   if (userAgentLower.includes('mobile') || userAgentLower.includes('android') ||
-      userAgentLower.includes('iphone') || userAgentLower.includes('ipad')) {
+    userAgentLower.includes('iphone') || userAgentLower.includes('ipad')) {
     return 'mobile';
   }
 
