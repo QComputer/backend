@@ -6,7 +6,7 @@ const UPLOAD_DIR = process.env.LIARA_DISK_PATH
   ? path.join(process.env.LIARA_DISK_PATH, 'uploads')
   : path.join(process.cwd(), 'uploads');
 
-const uploadImageToServer = async (fileBuffer, originalname, mimetype) => {
+const uploadImageToDisk = async (fileBuffer, originalname, mimetype) => {
   console.log(`Uploading to Liara disk: ${UPLOAD_DIR}`);
   console.log(`File info: ${originalname}, ${mimetype}, buffer size: ${fileBuffer.length}`);
 
@@ -37,4 +37,4 @@ const uploadImageToServer = async (fileBuffer, originalname, mimetype) => {
   }
 };
 
-export { uploadImageToServer };
+export { uploadImageToDisk };

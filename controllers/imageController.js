@@ -2,7 +2,7 @@ import fs from "fs";
 import fsSync from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { uploadImageToServer } from "../utils/imageUpload.js";
+import { uploadImageToDisk } from "../utils/imageUpload.js";
 import userModel from "../models/userModel.js";
 import imageModel from "../models/imageModel.js";
 
@@ -356,7 +356,7 @@ export const uploadImage = async (req, res) => {
     }
 
     // Upload to Liara disk (primary storage method)
-    const imageUrl = await uploadImageToServer(req.file.buffer, req.file.originalname, req.file.mimetype);
+    const imageUrl = await uploadImageToDisk(req.file.buffer, req.file.originalname, req.file.mimetype);
 
     // Save image metadata to database
     const imageDoc = new imageModel({
