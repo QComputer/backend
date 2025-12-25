@@ -58,6 +58,7 @@ setupSwaggerUI(app);
 
 // Serve static images from Liara disk
 import { promises as fs } from 'fs';
+import fsSync from 'fs';
 
 const UPLOAD_DIR = process.env.LIARA_DISK_PATH
   ? path.join(process.env.LIARA_DISK_PATH, 'uploads')
@@ -101,7 +102,19 @@ app.get('/health', async (req, res) => {
     const sessionStats = await sessionCleanup.getCleanupStats();
 
     // Get disk information
-    const diskInfo = await fs.statfs(UPLOAD_DIR);
+    let diskHealth = { available: false };
+    try {
+      const diskInfo = fsSync.statfsSync(UPLOAD_DIR);
+      diskHealth = {
+        available: true,
+        totalSpace: diskInfo.blocks * diskInfo.bsize,
+        freeSpace: diskInfo.bfree * diskInfo.bsize,
+        usedSpace: (diskInfo.blocks - diskInfo.bfree) * diskInfo.bsize,
+        usagePercentage: ((diskInfo.blocks - diskInfo.bfree) / diskInfo.blocks) * 100
+      };
+    } catch (error) {
+      console.warn('Could not get disk info:', error.message);
+    }
     const diskHealth = {
       totalSpace: diskInfo.blocks * diskInfo.bsize,
       freeSpace: diskInfo.bfree * diskInfo.bsize,

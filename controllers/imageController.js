@@ -116,7 +116,7 @@ const cleanupOldBackups = async (backupDir, keepCount = 5) => {
 // Download image backup from Liara disk
 export const downloadImageBackup = async (req, res) => {
   try {
-    await checkAdmin(req.body.userId);
+    await checkAdmin(req.userId);
     
     const backupDir = path.join(__dirname, '../uploads/backups');
     if (!fs.existsSync(backupDir)) {
@@ -162,7 +162,7 @@ export const downloadImageBackup = async (req, res) => {
 // Upload backup to Liara disk for restore
 export const uploadBackupZip = async (req, res) => {
   try {
-    await checkAdmin(req.body.userId);
+    await checkAdmin(req.userId);
     
     if (!req.file) {
       const errorResponse = createErrorResponse("No backup file uploaded", 400);
@@ -200,7 +200,7 @@ export const uploadBackupZip = async (req, res) => {
 // List all images from database with soft delete filtering
 export const listImages = async (req, res) => {
   try {
-    if (req.useRole !== 'admin') {
+    if (req.userRole !== 'admin') {
       return res.status(401).json({
         success: false,
         message: 'User authentication required'
