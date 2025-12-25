@@ -1,4 +1,5 @@
 import fs from "fs";
+import fsSync from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { uploadImageToServer } from "../utils/imageUpload.js";
@@ -7,6 +8,11 @@ import imageModel from "../models/imageModel.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Upload directory path (same as server.js)
+const UPLOAD_DIR = process.env.LIARA_DISK_PATH
+  ? path.join(process.env.LIARA_DISK_PATH, 'uploads')
+  : path.join(process.cwd(), 'uploads');
 
 // Standardized error response helpers
 const createErrorResponse = (message, statusCode = 500, error = null) => ({
@@ -356,8 +362,8 @@ export const uploadImage = async (req, res) => {
     const imageDoc = new imageModel({
       url: imageUrl,
       altText: req.file.originalname || 'Uploaded image',
-      description: req.description || '',
-      tags: [req.tags] || [],
+      description: req.body?.description || '',
+      tags: req.body?.tags || [],
       uploadedBy: req.userId
     });
 
@@ -418,5 +424,117 @@ export const clearImages = async (req, res) => {
       message: 'Error clearing images',
       error: error.message
     });
+  }
+};
+
+// Check disk connection and health
+export const checkDiskHealth = async (req, res) => {
+  try {
+    // Check if disk is accessible
+    let diskConnected = false;
+    let diskInfo = null;
+
+    try {
+      // Test if we can access the upload directory
+      await fs.promises.access(UPLOAD_DIR);
+      diskConnected = true;
+
+      // Get disk statistics
+      const stats = fsSync.statfsSync(UPLOAD_DIR);
+      diskInfo = {
+        totalSpace: stats.blocks * stats.bsize,
+        freeSpace: stats.bfree * stats.bsize,
+        usedSpace: (stats.blocks - stats.bfree) * stats.bsize,
+        usagePercentage: ((stats.blocks - stats.bfree) / stats.blocks) * 100,
+        inodesTotal: stats.files,
+        inodesFree: stats.ffree,
+        inodesUsed: stats.files - stats.ffree
+      };
+    } catch (error) {
+      console.warn('Disk access error:', error.message);
+    }
+
+    const healthResponse = {
+      diskConnected,
+      uploadDirectory: UPLOAD_DIR,
+      diskInfo,
+      timestamp: new Date().toISOString()
+    };
+
+    if (diskConnected) {
+      res.json(createSuccessResponse(healthResponse, 'Disk connection healthy'));
+    } else {
+      res.status(503).json(createErrorResponse('Disk not accessible', 503));
+    }
+  } catch (error) {
+    console.error('Disk health check error:', error);
+    const errorResponse = createErrorResponse('Error checking disk health', 500, error);
+    res.status(errorResponse.statusCode).json(errorResponse);
+  }
+};
+
+// Get detailed disk space and usage information
+export const getDiskSpace = async (req, res) => {
+  try {
+    // Check if disk is accessible
+    try {
+      await fs.promises.access(UPLOAD_DIR);
+    } catch (error) {
+      const errorResponse = createErrorResponse('Disk not accessible', 503, error);
+      return res.status(errorResponse.statusCode).json(errorResponse);
+    }
+
+    // Get detailed disk statistics
+    const stats = fsSync.statfsSync(UPLOAD_DIR);
+    const uploadStats = fsSync.statSync(UPLOAD_DIR);
+
+    const diskSpaceInfo = {
+      uploadDirectory: UPLOAD_DIR,
+      diskStats: {
+        totalSpace: stats.blocks * stats.bsize,
+        freeSpace: stats.bfree * stats.bsize,
+        usedSpace: (stats.blocks - stats.bfree) * stats.bsize,
+        usagePercentage: ((stats.blocks - stats.bfree) / stats.blocks) * 100,
+        inodesTotal: stats.files,
+        inodesFree: stats.ffree,
+        inodesUsed: stats.files - stats.ffree,
+        inodesUsagePercentage: ((stats.files - stats.ffree) / stats.files) * 100
+      },
+      uploadDirectoryStats: {
+        size: uploadStats.size,
+        createdAt: uploadStats.birthtime,
+        modifiedAt: uploadStats.mtime,
+        accessedAt: uploadStats.atime
+      },
+      fileCount: 0,
+      totalFileSize: 0
+    };
+
+    // Count files and calculate total size
+    try {
+      const files = fsSync.readdirSync(UPLOAD_DIR);
+      let fileCount = 0;
+      let totalSize = 0;
+
+      for (const file of files) {
+        const filePath = path.join(UPLOAD_DIR, file);
+        const fileStat = fsSync.statSync(filePath);
+        if (fileStat.isFile()) {
+          fileCount++;
+          totalSize += fileStat.size;
+        }
+      }
+
+      diskSpaceInfo.fileCount = fileCount;
+      diskSpaceInfo.totalFileSize = totalSize;
+    } catch (error) {
+      console.warn('Error counting files:', error.message);
+    }
+
+    res.json(createSuccessResponse(diskSpaceInfo, 'Disk space information retrieved'));
+  } catch (error) {
+    console.error('Disk space check error:', error);
+    const errorResponse = createErrorResponse('Error getting disk space information', 500, error);
+    res.status(errorResponse.statusCode).json(errorResponse);
   }
 };

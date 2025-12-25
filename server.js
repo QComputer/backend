@@ -115,12 +115,6 @@ app.get('/health', async (req, res) => {
     } catch (error) {
       console.warn('Could not get disk info:', error.message);
     }
-    const diskHealth = {
-      totalSpace: diskInfo.blocks * diskInfo.bsize,
-      freeSpace: diskInfo.bfree * diskInfo.bsize,
-      usedSpace: (diskInfo.blocks - diskInfo.bfree) * diskInfo.bsize,
-      usagePercentage: ((diskInfo.blocks - diskInfo.bfree) / diskInfo.blocks) * 100
-    };
 
     const healthData = {
       status: dbReadyState === 1 ? 'healthy' : 'degraded',

@@ -6,6 +6,8 @@ import {
   deleteImage,
   uploadImage,
   clearImages,
+  checkDiskHealth,
+  getDiskSpace,
 } from "../controllers/imageController.js";
 import {adminOnly, authMiddleware} from "../middleware/auth.js";
 import multer from "multer";
@@ -31,5 +33,11 @@ imageRouter.delete("/clear", adminOnly, clearImages);
 
 // Upload image to image service (all authenticated users)
 imageRouter.post("/upload", authMiddleware, upload.single("image"), uploadImage);
+
+// Check disk connection and health (public endpoint)
+imageRouter.get("/disk/health", checkDiskHealth);
+
+// Get detailed disk space and usage information (public endpoint)
+imageRouter.get("/disk/space", getDiskSpace);
 
 export default imageRouter;
