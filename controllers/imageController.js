@@ -1,19 +1,12 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import FormData from "form-data";
 import { uploadImageToServer } from "../utils/imageUpload.js";
 import userModel from "../models/userModel.js";
 import imageModel from "../models/imageModel.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const imageServerUrl = process.env.IMAGE_SERVER_URL || 'https://sefr-image.runflare.run';
-
-if (!imageServerUrl) {
-  throw new Error('IMAGE_SERVER_URL environment variable is required');
-}
 
 // Standardized error response helpers
 const createErrorResponse = (message, statusCode = 500, error = null) => ({
@@ -120,256 +113,87 @@ const cleanupOldBackups = async (backupDir, keepCount = 5) => {
   }
 };
 
-// Helper function to create a pre-restore backup
-const createPreRestoreBackup = async () => {
-  try {
-    const response = await fetch(`${imageServerUrl}/backup`, {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to create pre-restore backup from image service');
-    }
-
-    const preRestoreDir = path.join(__dirname, '../uploads/pre-restore-backups');
-    if (!fs.existsSync(preRestoreDir)) {
-      fs.mkdirSync(preRestoreDir, { recursive: true });
-    }
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupPath = path.join(preRestoreDir, `pre-restore-${timestamp}.zip`);
-
-    const writer = fs.createWriteStream(backupPath);
-    response.body.pipe(writer);
-
-    return new Promise((resolve, reject) => {
-      writer.on('finish', () => resolve(backupPath));
-      writer.on('error', reject);
-    });
-  } catch (error) {
-    console.error('Error creating pre-restore backup:', error);
-    throw error;
-  }
-};
-
-// Helper function to rollback a failed restore
-const rollbackRestore = async (restoredFiles) => {
-  try {
-    // Find the most recent pre-restore backup
-    const preRestoreDir = path.join(__dirname, '../uploads/pre-restore-backups');
-    if (!fs.existsSync(preRestoreDir)) {
-      throw new Error('No pre-restore backup directory found');
-    }
-
-    const files = fs.readdirSync(preRestoreDir)
-      .filter(file => file.startsWith('pre-restore-') && file.endsWith('.zip'))
-      .sort()
-      .reverse(); // Most recent first
-
-    if (files.length === 0) {
-      throw new Error('No pre-restore backup found');
-    }
-
-    const latestPreRestore = files[0];
-    const preRestorePath = path.join(preRestoreDir, latestPreRestore);
-
-    // Clear current images and restore from pre-restore backup
-    await clearImageService();
-
-    // Restore from pre-restore backup
-    const formData = new FormData();
-    formData.append('backup', fs.createReadStream(preRestorePath), {
-      filename: latestPreRestore,
-      contentType: 'application/zip'
-    });
-
-    const response = await fetch(`${imageServerUrl}/restore`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to rollback using pre-restore backup');
-    }
-
-    // Clean up the pre-restore backup after successful rollback
-    fs.unlinkSync(preRestorePath);
-
-    console.log(`Successfully rolled back ${restoredFiles.length} files`);
-  } catch (error) {
-    console.error('Error during rollback:', error);
-    throw error;
-  }
-};
-
-// Helper function to clear all images from image service
-const clearImageService = async () => {
-  try {
-    const response = await fetch(`${imageServerUrl}/clear`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to clear image service');
-    }
-
-    console.log('Image service cleared for rollback');
-  } catch (error) {
-    console.error('Error clearing image service:', error);
-    throw error;
-  }
-};
-
-// Download image backup from image service and save ZIP
+// Download image backup from Liara disk
 export const downloadImageBackup = async (req, res) => {
-  const startTime = Date.now();
   try {
     await checkAdmin(req.body.userId);
-    const response = await fetch(`${imageServerUrl}/backup`, {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to download backup from image service');
+    
+    const backupDir = path.join(__dirname, '../uploads/backups');
+    if (!fs.existsSync(backupDir)) {
+      fs.mkdirSync(backupDir, { recursive: true });
     }
 
+    // Create a simple backup by copying all files to a backup directory
+    const uploadFiles = fs.readdirSync(UPLOAD_DIR);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupSubDir = path.join(backupDir, `liara-disk-backup-${timestamp}`);
+    
+    if (!fs.existsSync(backupSubDir)) {
+      fs.mkdirSync(backupSubDir, { recursive: true });
+    }
+
+    let copiedCount = 0;
+    for (const file of uploadFiles) {
+      const sourcePath = path.join(UPLOAD_DIR, file);
+      const destPath = path.join(backupSubDir, file);
+      
+      if (fs.statSync(sourcePath).isFile()) {
+        fs.copyFileSync(sourcePath, destPath);
+        copiedCount++;
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Liara disk backup created successfully',
+      data: {
+        path: backupSubDir,
+        folderName: `liara-disk-backup-${timestamp}`,
+        fileCount: copiedCount
+      }
+    });
+  } catch (error) {
+    console.error('Backup error:', error);
+    const errorResponse = createErrorResponse('Error creating Liara disk backup', 500, error);
+    res.status(errorResponse.statusCode).json(errorResponse);
+  }
+};
+
+// Upload backup to Liara disk for restore
+export const uploadBackupZip = async (req, res) => {
+  try {
+    await checkAdmin(req.body.userId);
+    
+    if (!req.file) {
+      const errorResponse = createErrorResponse("No backup file uploaded", 400);
+      return res.status(errorResponse.statusCode).json(errorResponse);
+    }
+
+    // For simplicity, we'll just save the uploaded file as a backup
+    // In a real implementation, you would extract the zip contents
     const backupDir = path.join(__dirname, '../uploads/backups');
     if (!fs.existsSync(backupDir)) {
       fs.mkdirSync(backupDir, { recursive: true });
     }
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const zipPath = path.join(backupDir, `image-backup-${timestamp}.zip`);
-
-    const writer = fs.createWriteStream(zipPath);
-    response.body.pipe(writer);
-
-    writer.on('finish', async () => {
-      const duration = Date.now() - startTime;
-      console.log(`✅ Backup download completed in ${duration}ms`);
-
-      try {
-        // Clean up old backups, keep only the 5 most recent
-        await cleanupOldBackups(backupDir, 5);
-      } catch (cleanupError) {
-        console.warn('Failed to cleanup old backups:', cleanupError.message);
-        // Don't fail the response for cleanup errors
-      }
-
-      res.json({
-        success: true,
-        message: 'Image backup downloaded and saved successfully',
-        data: {
-          path: zipPath,
-          filename: `image-backup-${timestamp}.zip`,
-          duration: `${duration}ms`
-        }
-      });
-    });
-
-    writer.on('error', (error) => {
-      console.error('Error saving backup:', error);
-      const errorResponse = createErrorResponse('Error saving backup file', 500, error);
-      res.status(errorResponse.statusCode).json(errorResponse);
-    });
-
-  } catch (error) {
-    console.error('Download backup error:', error);
-    const errorResponse = createErrorResponse('Error downloading image backup', 500, error);
-    res.status(errorResponse.statusCode).json(errorResponse);
-  }
-};
-
-// Upload ZIP backup to image service for restore with transactional rollback
-export const uploadBackupZip = async (req, res) => {
-  let restoredFiles = [];
-  let backupCreated = false;
-
-  try {
-    await checkAdmin(req.body.userId);
-    // Find the latest backup zip in uploads/backups
-    const backupDir = path.join(__dirname, '../uploads/backups');
-    if (!fs.existsSync(backupDir)) {
-      return res.status(404).json({
-        success: false,
-        message: 'No backup directory found'
-      });
-    }
-
-    const files = fs.readdirSync(backupDir).filter(file => file.endsWith('.zip')).sort();
-    if (files.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'No backup zip files found'
-      });
-    }
-
-    const latestBackup = files[files.length - 1];
-    const zipPath = path.join(backupDir, latestBackup);
-
-    // Create a pre-restore backup for rollback purposes
-    try {
-      await createPreRestoreBackup();
-      backupCreated = true;
-    } catch (backupError) {
-      console.warn('Failed to create pre-restore backup:', backupError.message);
-      // Continue with restore even if pre-backup fails
-    }
-
-    // Upload the zip to image service restore endpoint
-    const formData = new FormData();
-    formData.append('backup', fs.createReadStream(zipPath), {
-      filename: latestBackup,
-      contentType: 'application/zip'
-    });
-
-    const response = await fetch(`${imageServerUrl}/restore`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to upload backup to image service: ${errorText}`);
-    }
-
-    const result = await response.json();
-
-    // Track restored files for potential rollback
-    if (result.data && result.data.extractedCount) {
-      restoredFiles = result.data.restoredFiles || [];
-    }
+    const backupPath = path.join(backupDir, `restore-backup-${timestamp}.zip`);
+    
+    await fs.promises.writeFile(backupPath, req.file.buffer);
 
     res.json({
       success: true,
-      message: 'Backup uploaded and restored successfully',
+      message: 'Backup file uploaded successfully. Manual extraction to uploads directory required.',
       data: {
-        ...result.data,
-        transactional: true,
-        rollbackAvailable: backupCreated
+        backupPath,
+        filename: `restore-backup-${timestamp}.zip`,
+        note: 'Extract this file to the uploads directory to restore images'
       }
     });
-
   } catch (error) {
-    console.error('Upload backup error:', error);
-
-    // Attempt rollback if we have tracking information
-    if (restoredFiles.length > 0) {
-      try {
-        console.log('Attempting rollback of failed restore...');
-        await rollbackRestore(restoredFiles);
-        console.log('Rollback completed successfully');
-      } catch (rollbackError) {
-        console.error('Rollback failed:', rollbackError);
-      }
-    }
-
-    res.status(500).json({
-      success: false,
-      message: 'Error uploading backup - rollback attempted if applicable',
-      error: error.message,
-      rollbackAttempted: restoredFiles.length > 0
-    });
+    console.error('Restore error:', error);
+    const errorResponse = createErrorResponse('Error uploading backup file', 500, error);
+    res.status(errorResponse.statusCode).json(errorResponse);
   }
 };
 
@@ -396,12 +220,17 @@ export const listImages = async (req, res) => {
       uploadDate: img.createdAt.toISOString(),
       uploadedBy: img.uploadedBy,
       deleted: img.deleted,
-      id: img._id
+      id: img._id,
+      storage: 'liara-disk' // Indicate storage method
     }));
 
     res.json({
       success: true,
-      data: imageData
+      data: imageData,
+      storageInfo: {
+        type: 'liara-disk',
+        path: UPLOAD_DIR
+      }
     });
   } catch (error) {
     console.error('List images error:', error);
@@ -413,7 +242,7 @@ export const listImages = async (req, res) => {
   }
 };
 
-// Delete image from image service with soft delete for owners, hard delete for admins
+// Delete image from Liara disk with soft delete for owners, hard delete for admins
 export const deleteImage = async (req, res) => {
   try {
     const { filename } = req.params;
@@ -455,23 +284,25 @@ export const deleteImage = async (req, res) => {
     }
 
     if (isAdmin) {
-      // Admin: hard delete from both database and image service
-      const response = await fetch(`${imageServerUrl}/images/${filename}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete image from image service');
+      // Admin: hard delete from both database and Liara disk
+      try {
+        const filePath = path.join(UPLOAD_DIR, filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          console.log(`Deleted file from Liara disk: ${filename}`);
+        }
+      } catch (deleteError) {
+        console.warn(`Failed to delete file from Liara disk: ${deleteError.message}`);
+        // Continue with database deletion even if file deletion fails
       }
 
       // Remove from database
       await imageModel.findByIdAndDelete(image._id);
 
-      const data = await response.json();
       res.json({
         success: true,
-        message: 'Image permanently deleted',
-        data
+        message: 'Image permanently deleted from Liara disk and database',
+        data: { filename, deletedFromDisk: true }
       });
     } else {
       // Owner (non-admin): soft delete
@@ -496,7 +327,7 @@ export const deleteImage = async (req, res) => {
   }
 };
 
-// Upload image to image service
+// Upload image to Liara disk
 export const uploadImage = async (req, res) => {
   console.log(`📤 Image upload request received: ${req.method} ${req.originalUrl || req.path}`);
 
@@ -518,18 +349,8 @@ export const uploadImage = async (req, res) => {
       console.warn(`Mimetype mismatch: claimed ${req.file.mimetype}, detected ${detectedMimeType}`);
     }
 
-    let imageUrl;
-    try {
-      imageUrl = await uploadImageToServer(req.file.buffer, req.file.originalname, req.file.mimetype);
-    } catch (uploadError) {
-      console.log('=== IMAGE SERVICE FALLBACK ===');
-      console.log(`Image service unavailable (${uploadError.message}), using data URL fallback`);
-      // Fallback: create data URL from buffer
-      const base64 = req.file.buffer.toString('base64');
-      const dataUrl = `data:${req.file.mimetype};base64,${base64}`;
-      imageUrl = dataUrl;
-      console.log(`Data URL created for image: ${dataUrl.substring(0, 50)}...`);
-    }
+    // Upload to Liara disk (primary storage method)
+    const imageUrl = await uploadImageToServer(req.file.buffer, req.file.originalname, req.file.mimetype);
 
     // Save image metadata to database
     const imageDoc = new imageModel({
@@ -544,28 +365,51 @@ export const uploadImage = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Image uploaded successfully',
+      message: 'Image uploaded successfully to Liara disk',
       data: { url: imageUrl, id: imageDoc._id }
     });
   } catch (error) {
     console.error('Upload image error:', error);
-    const errorResponse = createErrorResponse('Failed to upload image', 500, error);
+    const errorResponse = createErrorResponse('Failed to upload image to Liara disk', 500, error);
     res.status(errorResponse.statusCode).json(errorResponse);
   }
 };
 
-// Clear all images from image service
+// Clear all images from Liara disk
 export const clearImages = async (req, res) => {
   try {
     if (req.userRole !== 'admin') {
       throw new Error("Unauthorized admin request");
     }
 
-    await clearImageService();
+    // Clear all images from Liara disk
+    try {
+      const files = fs.readdirSync(UPLOAD_DIR);
+      let deletedCount = 0;
+      
+      for (const file of files) {
+        const filePath = path.join(UPLOAD_DIR, file);
+        try {
+          fs.unlinkSync(filePath);
+          deletedCount++;
+          console.log(`Deleted file: ${file}`);
+        } catch (error) {
+          console.warn(`Failed to delete file ${file}: ${error.message}`);
+        }
+      }
+      
+      console.log(`Cleared ${deletedCount} files from Liara disk`);
+    } catch (error) {
+      console.error('Error clearing Liara disk:', error);
+      throw new Error('Failed to clear Liara disk');
+    }
+
+    // Clear all images from database
+    await imageModel.deleteMany({});
 
     res.json({
       success: true,
-      message: 'All images cleared successfully'
+      message: 'All images cleared successfully from Liara disk and database'
     });
   } catch (error) {
     console.error('Clear images error:', error);

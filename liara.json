@@ -3,6 +3,15 @@
   "platform": "node",
   "startCommand": "node server.js",
   "env": {
-    "NODE_ENV": "production"
-  }
+    "NODE_ENV": "production",
+    "LIARA_DISK_PATH": "/app",
+    "BASE_URL": "https://sefr-backend.liara.run",
+    "FRONTEND_URL": "https://sefr.liara.run"
+  },
+  "disks": [
+    {
+      "name": "sefr-backend-disk",
+      "mountTo": "/app/uploads"
+    }
+  ]
 }
