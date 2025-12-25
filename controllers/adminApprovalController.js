@@ -9,9 +9,7 @@ const logger = winston.createLogger({
     winston.format.json()
   ),
   transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/admin-approval-error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/admin-approval-combined.log' })
+    new winston.transports.Console()
   ]
 });
 

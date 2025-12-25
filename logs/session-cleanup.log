@@ -1686,3 +1686,55 @@
 {"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:29:25.768Z"}
 {"level":"error","message":"❌ Session cleanup failed: Operation `sessions.find()` buffering timed out after 10000ms","stack":"MongooseError: Operation `sessions.find()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/Users/ahmad/Documents/projects/zero-community-backend/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:588:17)\n    at process.processTimers (node:internal/timers:523:7)","timestamp":"2025-12-25T09:29:35.785Z"}
 {"level":"error","message":"Initial session cleanup failed: Operation `sessions.find()` buffering timed out after 10000ms","stack":"MongooseError: Operation `sessions.find()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/Users/ahmad/Documents/projects/zero-community-backend/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:588:17)\n    at process.processTimers (node:internal/timers:523:7)","timestamp":"2025-12-25T09:29:35.786Z"}
+{"level":"info","message":"🧹 Starting session cleanup...","timestamp":"2025-12-25T09:31:42.148Z"}
+{"level":"info","message":"🧹 Session cleanup threshold: 24 hours","timestamp":"2025-12-25T09:31:42.150Z"}
+{"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:31:42.152Z"}
+{"level":"error","message":"❌ Session cleanup failed: Operation `sessions.find()` buffering timed out after 10000ms","stack":"MongooseError: Operation `sessions.find()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/Users/ahmad/Documents/projects/zero-community-backend/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:588:17)\n    at process.processTimers (node:internal/timers:523:7)","timestamp":"2025-12-25T09:31:52.190Z"}
+{"level":"error","message":"Initial session cleanup failed: Operation `sessions.find()` buffering timed out after 10000ms","stack":"MongooseError: Operation `sessions.find()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/Users/ahmad/Documents/projects/zero-community-backend/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:588:17)\n    at process.processTimers (node:internal/timers:523:7)","timestamp":"2025-12-25T09:31:52.190Z"}
+{"level":"info","message":"🧹 Starting session cleanup...","timestamp":"2025-12-25T09:34:03.143Z"}
+{"level":"info","message":"🧹 Session cleanup threshold: 24 hours","timestamp":"2025-12-25T09:34:03.145Z"}
+{"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:34:03.147Z"}
+{"level":"error","message":"❌ Session cleanup failed: Operation `sessions.find()` buffering timed out after 10000ms","stack":"MongooseError: Operation `sessions.find()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/Users/ahmad/Documents/projects/zero-community-backend/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:588:17)\n    at process.processTimers (node:internal/timers:523:7)","timestamp":"2025-12-25T09:34:13.160Z"}
+{"level":"error","message":"Initial session cleanup failed: Operation `sessions.find()` buffering timed out after 10000ms","stack":"MongooseError: Operation `sessions.find()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/Users/ahmad/Documents/projects/zero-community-backend/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:588:17)\n    at process.processTimers (node:internal/timers:523:7)","timestamp":"2025-12-25T09:34:13.160Z"}
+{"level":"info","message":"🧹 Starting session cleanup...","timestamp":"2025-12-25T09:34:41.960Z"}
+{"level":"info","message":"🧹 Session cleanup threshold: 24 hours","timestamp":"2025-12-25T09:34:41.962Z"}
+{"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:34:41.967Z"}
+{"level":"error","message":"❌ Session cleanup failed: Operation `sessions.find()` buffering timed out after 10000ms","stack":"MongooseError: Operation `sessions.find()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/Users/ahmad/Documents/projects/zero-community-backend/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:588:17)\n    at process.processTimers (node:internal/timers:523:7)","timestamp":"2025-12-25T09:34:51.979Z"}
+{"level":"error","message":"Initial session cleanup failed: Operation `sessions.find()` buffering timed out after 10000ms","stack":"MongooseError: Operation `sessions.find()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/Users/ahmad/Documents/projects/zero-community-backend/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:588:17)\n    at process.processTimers (node:internal/timers:523:7)","timestamp":"2025-12-25T09:34:51.979Z"}
+{"level":"info","message":"🧹 Starting session cleanup...","timestamp":"2025-12-25T09:36:03.569Z"}
+{"level":"info","message":"🧹 Session cleanup threshold: 24 hours","timestamp":"2025-12-25T09:36:03.570Z"}
+{"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:36:03.573Z"}
+{"level":"info","message":"🗑️  Found 0 expired sessions to clean up","timestamp":"2025-12-25T09:36:06.513Z"}
+{"level":"info","message":"🧹 Starting session cleanup...","timestamp":"2025-12-25T09:36:44.524Z"}
+{"level":"info","message":"🧹 Session cleanup threshold: 24 hours","timestamp":"2025-12-25T09:36:44.527Z"}
+{"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:36:44.530Z"}
+{"level":"info","message":"🗑️  Found 0 expired sessions to clean up","timestamp":"2025-12-25T09:36:46.649Z"}
+{"level":"info","message":"🧹 Starting session cleanup...","timestamp":"2025-12-25T09:37:34.572Z"}
+{"level":"info","message":"🧹 Session cleanup threshold: 24 hours","timestamp":"2025-12-25T09:37:34.573Z"}
+{"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:37:34.575Z"}
+{"level":"info","message":"🧹 Starting session cleanup...","timestamp":"2025-12-25T09:37:48.153Z"}
+{"level":"info","message":"🧹 Session cleanup threshold: 24 hours","timestamp":"2025-12-25T09:37:48.155Z"}
+{"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:37:48.157Z"}
+{"level":"error","message":"❌ Session cleanup failed: Operation `sessions.find()` buffering timed out after 10000ms","stack":"MongooseError: Operation `sessions.find()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/Users/ahmad/Documents/projects/zero-community-backend/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:588:17)\n    at process.processTimers (node:internal/timers:523:7)","timestamp":"2025-12-25T09:37:58.170Z"}
+{"level":"error","message":"Initial session cleanup failed: Operation `sessions.find()` buffering timed out after 10000ms","stack":"MongooseError: Operation `sessions.find()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/Users/ahmad/Documents/projects/zero-community-backend/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:588:17)\n    at process.processTimers (node:internal/timers:523:7)","timestamp":"2025-12-25T09:37:58.171Z"}
+{"level":"info","message":"🧹 Starting session cleanup...","timestamp":"2025-12-25T09:38:36.826Z"}
+{"level":"info","message":"🧹 Session cleanup threshold: 24 hours","timestamp":"2025-12-25T09:38:36.827Z"}
+{"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:38:36.830Z"}
+{"level":"error","message":"❌ Session cleanup failed: Operation `sessions.find()` buffering timed out after 10000ms","stack":"MongooseError: Operation `sessions.find()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/Users/ahmad/Documents/projects/zero-community-backend/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:588:17)\n    at process.processTimers (node:internal/timers:523:7)","timestamp":"2025-12-25T09:38:46.842Z"}
+{"level":"error","message":"Initial session cleanup failed: Operation `sessions.find()` buffering timed out after 10000ms","stack":"MongooseError: Operation `sessions.find()` buffering timed out after 10000ms\n    at Timeout.<anonymous> (/Users/ahmad/Documents/projects/zero-community-backend/node_modules/mongoose/lib/drivers/node-mongodb-native/collection.js:187:23)\n    at listOnTimeout (node:internal/timers:588:17)\n    at process.processTimers (node:internal/timers:523:7)","timestamp":"2025-12-25T09:38:46.842Z"}
+{"level":"info","message":"🧹 Starting session cleanup...","timestamp":"2025-12-25T09:39:20.345Z"}
+{"level":"info","message":"🧹 Session cleanup threshold: 24 hours","timestamp":"2025-12-25T09:39:20.346Z"}
+{"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:39:20.352Z"}
+{"level":"info","message":"🗑️  Found 0 expired sessions to clean up","timestamp":"2025-12-25T09:39:22.356Z"}
+{"level":"info","message":"🧹 Starting session cleanup...","timestamp":"2025-12-25T09:40:01.800Z"}
+{"level":"info","message":"🧹 Session cleanup threshold: 24 hours","timestamp":"2025-12-25T09:40:01.803Z"}
+{"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:40:01.811Z"}
+{"level":"info","message":"🗑️  Found 0 expired sessions to clean up","timestamp":"2025-12-25T09:40:03.958Z"}
+{"level":"info","message":"🧹 Starting session cleanup...","timestamp":"2025-12-25T09:40:50.679Z"}
+{"level":"info","message":"🧹 Session cleanup threshold: 24 hours","timestamp":"2025-12-25T09:40:50.683Z"}
+{"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:40:50.687Z"}
+{"level":"info","message":"🗑️  Found 0 expired sessions to clean up","timestamp":"2025-12-25T09:40:52.853Z"}
+{"level":"info","message":"🧹 Starting session cleanup...","timestamp":"2025-12-25T09:41:39.918Z"}
+{"level":"info","message":"🧹 Session cleanup threshold: 24 hours","timestamp":"2025-12-25T09:41:39.919Z"}
+{"level":"info","message":"⏰ Session cleanup job started. Will run every 1 hours.","timestamp":"2025-12-25T09:41:39.922Z"}
+{"level":"info","message":"🗑️  Found 0 expired sessions to clean up","timestamp":"2025-12-25T09:41:41.796Z"}

@@ -9,8 +9,7 @@ const logger = winston.createLogger({
     winston.format.json()
   ),
   transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/session-cleanup.log' })
+    new winston.transports.Console()
   ]
 });
 
