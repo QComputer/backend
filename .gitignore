@@ -12,7 +12,8 @@ yarn-error.log*
 .env.test
 
 # Logs
-logs/
+logs
+logs/*
 *.log
 
 # Runtime data

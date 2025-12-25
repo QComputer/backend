@@ -26,12 +26,10 @@ import {
   markOrderAsPaid,
   markOrderAsUnpaid,
 } from "../controllers/orderController.js";
-import {authMiddleware, storeOnly, userOrGuest, driverOnly, adminOnly, guestOnly} from "../middleware/auth.js";
+import {storeOnly, userOrGuest, driverOnly, adminOnly} from "../middleware/auth.js";
 
 const orderRouter = express.Router();
 orderRouter.post("/place", userOrGuest, placeOrder);
-orderRouter.get("/guest-orders", guestOnly, getGuestOrders);
-orderRouter.post("/cancel-guest", guestOnly, cancelGuestOrder);
 orderRouter.post("/accept-store", storeOnly, acceptOrderByStore);
 orderRouter.post("/reject-store", storeOnly, rejectOrderByStore);
 orderRouter.post("/cancel", userOrGuest, cancelOrder);
