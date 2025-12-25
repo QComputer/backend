@@ -71,6 +71,11 @@ const UPLOAD_DIR = process.env.LIARA_DISK_PATH
     app.use('/uploads', express.static(UPLOAD_DIR));
   } catch (error) {
     console.warn('Could not set up upload directory for static serving:', error.message);
+    // Fallback to serving from the current directory if Liara disk is not available
+    const FALLBACK_UPLOAD_DIR = path.join(process.cwd(), 'uploads');
+    await fs.mkdir(FALLBACK_UPLOAD_DIR, { recursive: true });
+    console.log('Fallback upload directory ready:', FALLBACK_UPLOAD_DIR);
+    app.use('/uploads', express.static(FALLBACK_UPLOAD_DIR));
   }
 })();
 
