@@ -10,14 +10,11 @@ export const autoGuestLogin = async (req, res, next) => {
   try {
     // Skip if user is already authenticated with a valid session
     if (req.authenticated && req.user && req.sessionType !== 'anonymous') {
-      console.log(`✅ User already authenticated: ${req.user.id} (${req.sessionType})`);
+      console.log(`✅ User already authenticated: userId:${req.user.id} or sessionId:${req.sessionId} - sessionType:${req.sessionType}`);
       return next();
     }
     // Check for existing guest session from headers, cookies, or query params
-    let sessionId = req.headers['x-session-id'] ||
-      req.cookies?.guest_session ||
-      req.query?.session_id ||
-      req.body?.sessionId;
+    let sessionId = req.headers['x-session-id'] || req.cookies?.guest_session
 
     let session = null;
 
@@ -93,6 +90,7 @@ export const autoGuestLogin = async (req, res, next) => {
     req.sessionType = 'guest';
     req.userRole = 'guest';
     req.userId = null;
+    req.sessionId = session.sessionId;
     req.user = {
       id: null,
       session: session,

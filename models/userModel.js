@@ -3,7 +3,7 @@ import mongoose from "mongoose"
 const userSchema = new mongoose.Schema({
     // Status
     statusMain: { type: String, enum: ['online', 'offline', 'busy', 'soon'] },
-    role: { type: String, enum: ['admin', 'store', 'customer', 'driver', 'guest', 'staff'] },
+    role: { type: String, enum: ['admin', 'store', 'customer', 'driver', 'staff'] },
     statusCustom: { type: String, default: "" },
 
     // Staff-Store association (for staff role)

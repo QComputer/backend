@@ -443,16 +443,6 @@ const guestLogin = async (req, res) => {
         success: true,
         data: {
           token: existingSession.token,
-          user: {
-            _id: existingSession.sessionId, // Use session ID as user ID for guests
-            role: 'guest',
-            username: `guest_${existingSession.sessionId.substring(0, 8)}`,
-            name: '',
-            statusMain: 'online',
-            statusCustom: '',
-            avatar: '',
-            image: ''
-          },
           isGuest: true,
           sessionId: existingSession.sessionId
         }
@@ -461,49 +451,32 @@ const guestLogin = async (req, res) => {
       return res.json(responseData);
     }
 
-    // Generate a unique username for the guest
-    const guestUsername = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
-    const guestPassword = `temp_${Math.random().toString(36).substr(2, 16)}`;
-
-    // Create a temporary guest user
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(guestPassword, salt);
-
-    const guestUser = new userModel({
-      username: guestUsername,
-      password: hashedPassword,
-      role: 'guest',
-      statusMain: 'online',
-    });
-
-    await guestUser.save();
-
     // Create session for the guest user
-    const session = await sessionModel.createGuestSession({
+    const metadata = {
       ipAddress: req.ip || req.connection?.remoteAddress,
       userAgent: req.headers['user-agent'],
       referrer: req.headers['referer']
+    };
+    const session = await sessionModel.createGuestSession(metadata);
+    // Set session cookie for backward compatibility
+    res.cookie('guest_session', session.sessionId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      path: '/',
+      domain: process.env.COOKIE_DOMAIN || undefined
     });
 
-    const token = createToken(guestUser._id, 'guest');
     logger.info(`Guest user created and logged in: username=${guestUser.username}, userId=${guestUser._id}`);
 
     const responseData = {
       success: true,
       data: {
-        token,
-        user: {
-          _id: guestUser._id,
-          role: 'guest',
-          username: guestUser.username,
-          name: '',
-          statusMain: 'online',
-          statusCustom: '',
-          avatar: '',
-          image: ''
-        },
+        token: session.token,
         isGuest: true,
-        sessionId: session.sessionId
+        sessionId: session.sessionId,
+        user: null
       }
     };
 
@@ -585,7 +558,7 @@ const updateStatusCustom = async (req, res) => {
     await userModel.findByIdAndUpdate(userId, { statusCustom: req.statusCustom });
     const updatedUser = await userModel.findById(userId).select("-password");
     res.json({ success: true, data: updatedUser })
-    
+
   } catch (error) {
     console.log(error);
   }
@@ -882,7 +855,7 @@ const getAdminAllUsers = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     const users = await userModel
-      .find({role: 'store'})
+      .find({ role: 'store' })
       .select("-password -cartData")
       .sort({ role: 1, username: 1 })
       .limit(1000);

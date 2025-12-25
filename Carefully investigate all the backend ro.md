@@ -1,0 +1,1 @@
+Carefully investigate all the backend routes and controllers of users and guest. Then check the sessionModel. I want the sessionModel gets simpler and neat. For each shop cart we need either a user refrence or a sessionId refrence. 

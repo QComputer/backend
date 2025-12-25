@@ -17,15 +17,6 @@ const sessionSchema = new mongoose.Schema({
   },
 
   /**
-   * Reference to user (null for guest sessions)
-   */
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
-    default: null
-  },
-
-  /**
    * JWT token associated with this session
    */
   token: {
@@ -41,14 +32,6 @@ const sessionSchema = new mongoose.Schema({
     type: Date,
     required: true,
     index: true
-  },
-
-  /**
-   * Flag indicating if this is a guest session
-   */
-  isGuest: {
-    type: Boolean,
-    default: false
   },
 
   /**
@@ -161,11 +144,6 @@ sessionSchema.statics.findByToken = async function(token) {
 
     if (decoded.sessionId) {
       return this.findOne({ sessionId: decoded.sessionId });
-    }
-
-    // For backward compatibility with user tokens
-    if (decoded.id) {
-      return this.findOne({ userId: decoded.id });
     }
 
     return null;
