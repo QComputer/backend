@@ -100,6 +100,15 @@ app.get('/health', async (req, res) => {
     const dbReadyState = mongoose.connection.readyState;
     const sessionStats = await sessionCleanup.getCleanupStats();
 
+    // Get disk information
+    const diskInfo = await fs.statfs(UPLOAD_DIR);
+    const diskHealth = {
+      totalSpace: diskInfo.blocks * diskInfo.bsize,
+      freeSpace: diskInfo.bfree * diskInfo.bsize,
+      usedSpace: (diskInfo.blocks - diskInfo.bfree) * diskInfo.bsize,
+      usagePercentage: ((diskInfo.blocks - diskInfo.bfree) / diskInfo.blocks) * 100
+    };
+
     const healthData = {
       status: dbReadyState === 1 ? 'healthy' : 'degraded',
       timestamp: new Date().toISOString(),
@@ -108,6 +117,7 @@ app.get('/health', async (req, res) => {
         readyState: dbReadyState
       },
       sessions: sessionStats,
+      disk: diskHealth,
       uptime: process.uptime(),
       memory: process.memoryUsage()
     };
