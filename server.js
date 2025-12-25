@@ -56,6 +56,24 @@ configureCORS(app);
 // Setup Swagger documentation
 setupSwaggerUI(app);
 
+// Serve static images from Liara disk
+import { promises as fs } from 'fs';
+
+const UPLOAD_DIR = process.env.LIARA_DISK_PATH
+  ? path.join(process.env.LIARA_DISK_PATH, 'uploads')
+  : path.join(process.cwd(), 'uploads');
+
+// Ensure upload directory exists and serve static files
+(async () => {
+  try {
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+    console.log('Upload directory ready for static serving:', UPLOAD_DIR);
+    app.use('/uploads', express.static(UPLOAD_DIR));
+  } catch (error) {
+    console.warn('Could not set up upload directory for static serving:', error.message);
+  }
+})();
+
 // API endpoints with versioning
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/product", productRouter);

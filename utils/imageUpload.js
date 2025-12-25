@@ -1,34 +1,39 @@
-import axios from 'axios';
-import FormData from "form-data";
+import fs from 'fs/promises';
+import path from 'path';
+
+// Configure upload directory to use Liara disk
+const UPLOAD_DIR = process.env.LIARA_DISK_PATH
+  ? path.join(process.env.LIARA_DISK_PATH, 'uploads')
+  : path.join(process.cwd(), 'uploads');
 
 const uploadImageToServer = async (fileBuffer, originalname, mimetype) => {
-  const imageServerUrl = process.env.IMAGE_SERVER_URL || 'http://localhost:3001';
-
-  console.log(`Uploading to image server: ${imageServerUrl}/upload`);
+  console.log(`Uploading to Liara disk: ${UPLOAD_DIR}`);
   console.log(`File info: ${originalname}, ${mimetype}, buffer size: ${fileBuffer.length}`);
 
-  const imageFormData = new FormData();
-  imageFormData.append('image', fileBuffer, {
-    filename: originalname,
-    contentType: mimetype,
-  });
-
-  console.log('FormData created with buffer');
-
   try {
-    const imageResponse = await axios.post(`${imageServerUrl}/upload`, imageFormData, {
-      headers: {
-        ...imageFormData.getHeaders(),
-      },
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity,
-    });
+    // Ensure upload directory exists
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+    console.log('Upload directory ready:', UPLOAD_DIR);
 
-    console.log('Image upload successful:', imageResponse.data.data);
-    return imageResponse.data.data.url;
+    // Generate unique filename
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const extension = path.extname(originalname) || '.jpg';
+    const filename = `${uniqueSuffix}${extension}`;
+    const filePath = path.join(UPLOAD_DIR, filename);
+
+    // Save file to disk
+    await fs.writeFile(filePath, fileBuffer);
+    console.log('File saved to disk:', filename);
+
+    // Return the URL for accessing the image
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const imageUrl = `${baseUrl}/uploads/${filename}`;
+    
+    console.log('Image upload successful:', imageUrl);
+    return imageUrl;
   } catch (error) {
-    console.error(`Image server error (${error.response?.status}):`, error.response?.data || error.message);
-    throw new Error(`Failed to upload to image-server: ${error.response?.data?.message || error.message}`);
+    console.error('Liara disk upload error:', error);
+    throw new Error(`Failed to upload to Liara disk: ${error.message}`);
   }
 };
 
