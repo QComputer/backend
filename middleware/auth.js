@@ -74,8 +74,8 @@ export const authMiddleware = (options = {}) => {
 
         // Log successful authentication with enhanced monitoring
         const logData = {
-          userId: authResult.id || 'not registered',
-          sessionId: authResult.sessionId || null,
+          userId: authResult.userId || 'not registered',
+          sessionId: authResult.sessionId || 'not a guest session',
           method: req.method,
           path: req.originalUrl || req.path,
           ip: req.ip || req.connection?.remoteAddress,

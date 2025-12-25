@@ -9,7 +9,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import winston from "winston";
 import mongoose from "mongoose";
-import { uploadImageToServer } from "../utils/imageUpload.js";
+import { uploadImageToDisk } from "../utils/imageUpload.js";
 import {
   validateUserRegistration,
   validateUserUpdate,
@@ -79,7 +79,7 @@ const uploadUserImage = async (req, res, imageType, fieldName) => {
 
     let imageUrl = '';
     try {
-      imageUrl = await uploadImageToServer(req.file.buffer, req.file.originalname, req.file.mimetype);
+      imageUrl = await uploadImageToDisk(req.file.buffer, req.file.originalname, req.file.mimetype);
     } catch (uploadError) {
       console.log(`=== ${imageType.toUpperCase()} SERVICE FALLBACK ===`);
       console.log(`Image service unavailable (${uploadError.message}), using data URL fallback`);
