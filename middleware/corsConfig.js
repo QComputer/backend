@@ -22,7 +22,7 @@ export const configureCORS = (app) => {
     ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
     : [];
 
-  const additionalOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [];
+  const additionalOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : ['http://localhost:3002'];
 
   const devOrigins = process.env.NODE_ENV === 'development'
     ? ['http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'http://localhost:3004']

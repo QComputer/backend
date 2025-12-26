@@ -6,17 +6,17 @@ import {
   removeCategory,
   editCategory,
 } from "../controllers/categoryController.js";
-import { authMiddleware } from "../middleware/auth.js";
+import { authMiddleware,userOrGuest } from "../middleware/auth.js";
 import multer from "multer";
 
 const categoryRouter = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-categoryRouter.post("/add", authMiddleware({ requireAuth: true }), upload.single("image"), addCategory);
-categoryRouter.post("/list", authMiddleware({ requireAuth: true }), listCategory);
+categoryRouter.post("/add", userOrGuest, upload.single("image"), addCategory);
+categoryRouter.post("/list", userOrGuest, listCategory);
 categoryRouter.get("/public-list/:storeId", publicListCategory);
-//categoryRouter.get("/:id", authMiddleware({ requireAuth: true }), getCategory);
-categoryRouter.delete("/:id", authMiddleware({ requireAuth: true }), removeCategory);
-categoryRouter.put("/:id", authMiddleware({ requireAuth: true }), upload.single("image"), editCategory);
+//categoryRouter.get("/:id", getCategory);
+categoryRouter.delete("/:id", authMiddleware, removeCategory);
+categoryRouter.put("/:id", upload.single("image"), editCategory);
 
 export default categoryRouter;

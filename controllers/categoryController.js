@@ -1,5 +1,6 @@
 import categoryModel from "../models/categoryModel.js";
 import winston from "winston";
+import { uploadImageToDisk } from "../utils/imageUpload.js";
 
 const logger = winston.createLogger({
   level: 'info',
@@ -50,11 +51,27 @@ const addCategory = async (req, res) => {
       }
     }
 
+    // Handle image upload if a file is provided
+    let imageUrl = null;
+    if (req.file) {
+      try {
+        imageUrl = await uploadImageToDisk(req.file.buffer, req.file.originalname, req.file.mimetype);
+      } catch (uploadError) {
+        console.log('=== IMAGE SERVICE FALLBACK ===');
+        console.log(`Image service unavailable (${uploadError.message}), using data URL fallback`);
+        // Fallback: create data URL from buffer
+        const base64 = req.file.buffer.toString('base64');
+        const dataUrl = `data:${req.file.mimetype};base64,${base64}`;
+        imageUrl = dataUrl;
+        console.log(`Data URL created for category image: ${dataUrl.substring(0, 50)}...`);
+      }
+    }
+
     const category = new categoryModel({
       name,
       store: userId,
       description,
-      image: (typeof processedImage === 'string' && processedImage.trim()) ? processedImage : undefined,
+      image: imageUrl || (typeof processedImage === 'string' && processedImage.trim()) ? processedImage : undefined,
       isGlobal: categoryIsGlobal,
     });
 
@@ -76,7 +93,7 @@ const addCategory = async (req, res) => {
   }
 };
 
-// List categories for marketer or admin
+// List categories for store or admin
 const listCategory = async (req, res) => {
   try {
     const userId = req.userId;
@@ -209,9 +226,8 @@ const editCategory = async (req, res) => {
     let imageUrl = (typeof processedImage === 'string' && processedImage.trim()) ? processedImage : category.image; // Use existing image if no valid new one provided
     if (req.file) {
       try {
-        // Import the upload function from image controller
-        const { uploadImageToServer } = await import('./imageController.js');
-        imageUrl = await uploadImageToServer(req.file.buffer, req.file.originalname, req.file.mimetype);
+        // Use uploadImageToDisk directly
+        imageUrl = await uploadImageToDisk(req.file.buffer, req.file.originalname, req.file.mimetype);
       } catch (uploadError) {
         console.log('=== IMAGE SERVICE FALLBACK ===');
         console.log(`Image service unavailable (${uploadError.message}), using data URL fallback`);

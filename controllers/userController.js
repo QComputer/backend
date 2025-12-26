@@ -50,16 +50,12 @@ const createToken = (id, role) => {
 const uploadUserImage = async (req, res, imageType, fieldName) => {
   try {
     const { targetId } = req.params;
-    const userId = req.userId; // Use authenticated user ID
+    const userId = req.userId; // 
+    const useRole = req.useRole; // 
     console.log(`=== UPLOAD ${imageType.toUpperCase()} START ===`);
     console.log(`Upload ${imageType} - userId: ${userId}, targetId: ${targetId}, field: ${fieldName}`);
 
-    const user = await userModel.findById(userId);
-    if (!user) {
-      console.log(`User not found: ${userId}`);
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-    if (user.role !== "admin" && userId !== targetId) {
+    if (useRole !== "admin" && userId !== targetId) {
       console.log(`Unauthorized access: user ${userId} trying to modify ${targetId}`);
       return res.status(403).json({ success: false, message: "Unauthorized access" });
     }
@@ -413,7 +409,7 @@ const loginUser = async (req, res) => {
   }
 };
 
-// Guest login - creates a temporary guest user with session management
+// Guest login - creates a temporary guest session with session management
 const guestLogin = async (req, res) => {
   logger.info("Guest login attempt");
 
@@ -442,7 +438,7 @@ const guestLogin = async (req, res) => {
       const responseData = {
         success: true,
         data: {
-          token: existingSession.token,
+          sessionToken: existingSession.token,
           isGuest: true,
           sessionId: existingSession.sessionId
         }
@@ -458,6 +454,7 @@ const guestLogin = async (req, res) => {
       referrer: req.headers['referer']
     };
     const session = await sessionModel.createGuestSession(metadata);
+    
     // Set session cookie for backward compatibility
     res.cookie('guest_session', session.sessionId, {
       httpOnly: true,
@@ -468,7 +465,7 @@ const guestLogin = async (req, res) => {
       domain: process.env.COOKIE_DOMAIN || undefined
     });
 
-    logger.info(`Guest user created and logged in: username=${guestUser.username}, userId=${guestUser._id}`);
+    logger.info(`Guest session created: ${session.sessionId}`);
 
     const responseData = {
       success: true,
@@ -480,10 +477,10 @@ const guestLogin = async (req, res) => {
       }
     };
 
-    logger.info(`Guest login successful for user: ${guestUser.username}`);
+    logger.info(`Guest login successful for session: ${session.sessionId}`);
     res.json(responseData);
   } catch (error) {
-    logger.error("Error creating guest user:", error);
+    logger.error("Error creating guest session:", error);
     res.json({ success: false, message: `Error: ${error.message}`, error });
   }
 };
@@ -818,23 +815,6 @@ const getAllCustomers = async (req, res) => {
   }
 };
 
-// Get all users (accessible by admin only )
-const getAllGuests = async (req, res) => {
-  try {
-    const adminId = req.body.userId;
-    const admin = await userModel.findById(adminId);
-    if (!admin || admin.role !== "admin") {
-      return res.json({ success: false, message: "Unauthorized access" });
-    }
-    const users = await userModel.find({ role: "guest" }).sort({ username: 1 });
-
-    logger.info(`Fetched ${users.length} users`);
-    res.json({ success: true, data: users });
-  } catch (error) {
-    logger.error("Error fetching all users:", error);
-    res.json({ success: false, message: "Error fetching all users", error });
-  }
-};
 
 // Get all users
 const getAdminAllUsers = async (req, res) => {

@@ -19,21 +19,23 @@ import {
   removeProductReaction,
   getProductReaction,
 } from "../controllers/productController.js";
-import {adminOnly, userOrGuest, storeOnly } from "../middleware/auth.js";
+import {authMiddleware, adminOnly, userOrGuest, storeOnly } from "../middleware/auth.js";
 import { autoGuestLogin } from "../middleware/autoGuestLogin.js";
+import multer from "multer";
 
 const productRouter = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Protected routes (authentication required)
 productRouter.get("/all", adminOnly, getAllProducts); // admin only
-productRouter.get("/list", storeOnly, listProduct); // owner store
+productRouter.get("/list", authMiddleware, getProductsWithCategories); // owner store
 productRouter.get("/products-with-categories", userOrGuest, getProductsWithCategories); // Get products and categories combined (optimized for products page)
 //productRouter.post("/cart-products", authMiddleware, getCartProducts);
-productRouter.post("/add", storeOnly, addProduct);
+productRouter.post("/add", authMiddleware, upload.single("image"), addProduct);
 productRouter.get("/store/:username", userOrGuest, publicListProduct);
-productRouter.get("/:id", storeOnly, getProduct);
-productRouter.delete("/:id", storeOnly, removeProduct);
-productRouter.put("/:id", storeOnly, editProduct);
+productRouter.get("/:id", authMiddleware, getProduct);
+productRouter.delete("/:id", authMiddleware, removeProduct);
+productRouter.put("/:id", authMiddleware, upload.single("image"), editProduct);
 
 // Reaction routes
 productRouter.post("/reaction", userOrGuest, addProductReaction);

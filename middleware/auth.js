@@ -21,7 +21,6 @@ export const authAndAuthorize = (options = {}) => {
  * @param {boolean} options.requireAuth - Whether authentication is required (default: true)
  * @param {Array} options.allowedRoles - Array of allowed roles (default: [])
  * @param {boolean} options.allowGuest - Whether to allow guest sessions (default: false)
- * @param {string} options.sessionType - Type of session to check ('user' | 'guest' | 'both') (default: 'user')
  * @returns {Function} Express middleware function
  */
 export const authMiddleware = (options = {}) => {
@@ -53,12 +52,12 @@ export const authMiddleware = (options = {}) => {
 
       // Try user authentication first
       if (token) {
-        authResult = await validateUserToken(token);
+        authResult = validateUserToken(token);
       }
 
       // If user auth failed and guest is allowed, try guest session
       if (!authResult && allowGuest) {
-        authResult = await validateGuestSession(req);
+        authResult = validateGuestSession(req);
       }
 
       // Handle authentication result - UNIFIED APPROACH
@@ -131,10 +130,11 @@ export const authMiddleware = (options = {}) => {
 async function validateUserToken(token) {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Decoded JWT payload:', decoded); // Debug logging
     return {
       user: decoded,
       role: decoded.role,
-      userId: decoded.id,
+      userId: decoded.id || decoded._id || decoded.userId,
       token: token,
     };
   } catch (error) {
@@ -164,6 +164,7 @@ async function validateGuestSession(req) {
     // Import session model dynamically to avoid circular dependencies
     const sessionModel = (await import('../models/sessionModel.js')).default;
     
+    console.log("----------- Going to find and validate the guest sessionId:",guestSessionId,"------------")
     // Find and validate the guest session
     const session = await sessionModel.findByToken(guestSessionId);
     
@@ -315,12 +316,4 @@ export const authorizeRoles = (roles) => {
   });
 };
 
-/**
- * User cart middleware (specific for authenticated user cart operations)
- * Now unified to work with both guest and user sessions
- */
-export const userCartMiddleware = authMiddleware({
-  requireAuth: false, // Changed to false to allow guest sessions
-  allowedRoles: ['customer', 'store', 'admin', 'guest'], // Added guest role
-  allowGuest: true,
-});
+

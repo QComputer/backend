@@ -4,6 +4,7 @@ import categoryModel from "../models/categoryModel.js";
 import productReactionModel from "../models/productReactionModel.js";
 import mongoose from "mongoose";
 import winston from "winston";
+import { uploadImageToDisk } from "../utils/imageUpload.js";
 import { createErrorResponse, createSuccessResponse } from "../utils/errorUtils.js";
 
 const logger = winston.createLogger({
@@ -110,6 +111,22 @@ const addProduct = async (req, res) => {
       });
     }
 
+    // Handle image upload if a file is provided
+    let imageUrl = null;
+    if (req.file) {
+      try {
+        imageUrl = await uploadImageToDisk(req.file.buffer, req.file.originalname, req.file.mimetype);
+      } catch (uploadError) {
+        console.log('=== IMAGE SERVICE FALLBACK ===');
+        console.log(`Image service unavailable (${uploadError.message}), using data URL fallback`);
+        // Fallback: create data URL from buffer
+        const base64 = req.file.buffer.toString('base64');
+        const dataUrl = `data:${req.file.mimetype};base64,${base64}`;
+        imageUrl = dataUrl;
+        console.log(`Data URL created for product image: ${dataUrl.substring(0, 50)}...`);
+      }
+    }
+
     // Handle category - could be ID or name
     let categoryId = req.body.category;
     if (categoryId && !mongoose.Types.ObjectId.isValid(categoryId)) {
@@ -135,7 +152,7 @@ const addProduct = async (req, res) => {
       price: req.body.price,
       currency: req.body.currency || 'IRT',
       category: categoryId,
-      image: req.body.image || null,
+      image: imageUrl || req.body.image || null,
       label: req.body.label,
       available: req.body.available === true || req.body.available === "true",
       ratings: req.body.ratings || 0,
@@ -187,12 +204,11 @@ const addProduct = async (req, res) => {
 //  product list for store
 const listProduct = async (req, res) => {
   try {
-
     const userId = req.userId;
 
     const products = await productModel
       .find({ store: userId })
-      .populate('category', 'name'); // Populate category name for filtering
+      .populate('category', 'name _id'); // Populate category name for filtering
     res.json({ success: true, data: products });
   } catch (error) {
     logger.error('Error listing products:', error);
@@ -277,6 +293,22 @@ const editProduct = async (req, res) => {
         .json({ success: false, message: "You can only edit your own products" });
     }
 
+    // Handle image upload if a new image file is provided
+    let imageUrl = (typeof image === 'string' && image.trim()) ? image : product.image; // Use existing image if no valid new one provided
+    if (req.file) {
+      try {
+        imageUrl = await uploadImageToDisk(req.file.buffer, req.file.originalname, req.file.mimetype);
+      } catch (uploadError) {
+        console.log('=== IMAGE SERVICE FALLBACK ===');
+        console.log(`Image service unavailable (${uploadError.message}), using data URL fallback`);
+        // Fallback: create data URL from buffer
+        const base64 = req.file.buffer.toString('base64');
+        const dataUrl = `data:${req.file.mimetype};base64,${base64}`;
+        imageUrl = dataUrl;
+        console.log(`Data URL created for product image: ${dataUrl.substring(0, 50)}...`);
+      }
+    }
+
     // Update fields if provided with proper type conversion
     if (name) product.name = name;
     if (description) product.description = description;
@@ -311,7 +343,7 @@ const editProduct = async (req, res) => {
     if (barcode) product.barcode = barcode;
     if (weight) product.weight = weight;
     if (dimensions) product.dimensions = dimensions;
-    if (image) product.image = image;
+    if (typeof imageUrl === 'string' && imageUrl.trim()) product.image = imageUrl;
 
     product.updatedAt = new Date();
 
@@ -451,7 +483,7 @@ const getPublicProduct = async (req, res) => {
 // Get all public products (for public menu viewing)
 const getPublicProducts = async (req, res) => {
   try {
-    const { category, search, limit = 50, page = 1 } = req.query;
+    const { category, search, limit = 100, page = 1 } = req.query;
     const { storeId } = req.params;
     let query = { available: true }; // Only show available products
 
@@ -460,7 +492,6 @@ const getPublicProducts = async (req, res) => {
       query.store = storeId;
     } else {
       res.json({ success: false, message: "storeId is reqiered." });
-
     }
 
     // Filter by category if provided
@@ -811,7 +842,7 @@ const getProductsWithCategories = async (req, res) => {
     } else if (userRole === 'admin') {
       categoriesQuery = {};
     } else {
-      categoriesQuery = { isGlobal: true };
+      categoriesQuery = {};
     }
 
     const categories = await categoryModel.find(categoriesQuery).sort({ name: 1 });

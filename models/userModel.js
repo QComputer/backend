@@ -1,11 +1,12 @@
 import mongoose from "mongoose"
+import cartModel from "./cartModel.js";
 
 const userSchema = new mongoose.Schema({
     // Status
     statusMain: { type: String, enum: ['online', 'offline', 'busy', 'soon'] },
     role: { type: String, enum: ['admin', 'store', 'customer', 'driver', 'staff'] },
     statusCustom: { type: String, default: "" },
-
+    //cart: { type: mongoose.Schema.Types.ObjectId, ref: 'cart' },
     // Staff-Store association (for staff role)
     store: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
 
@@ -94,6 +95,35 @@ userSchema.index({ statusMain: 1 });
 userSchema.index({ showOnlineStatus: 1 });
 userSchema.index({ locationLat: 1, locationLng: 1 }); // For location-based queries
 userSchema.index({ favorites: 1 }); // For favorite queries
+
+// Pre-save hook to automatically create cart for customer users
+userSchema.pre('save', async function(next) {
+  // Only create cart for new customer users
+  if (this.isNew && this.role === 'customer') {
+    try {
+      // Create a new cart for this user
+      const newCart = new cartModel({
+        user: this._id,
+        items: [],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      
+      // Save the cart
+      await newCart.save();
+      
+      // Set the cart reference on the user
+      this.cart = newCart._id;
+      
+      console.log(`✅ Automatically created cart ${newCart._id} for new customer user ${this._id}`);
+    } catch (error) {
+      console.error('❌ Error creating automatic cart for user:', error.message);
+      // Don't fail user creation if cart creation fails
+      next();
+    }
+  }
+  next();
+});
 
 const userModel = mongoose.models.user || mongoose.model("user", userSchema);
 

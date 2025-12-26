@@ -9,7 +9,7 @@ import {
   checkDiskHealth,
   getDiskSpace,
 } from "../controllers/imageController.js";
-import {adminOnly, authMiddleware} from "../middleware/auth.js";
+import {adminOnly, authMiddleware, userOrGuest} from "../middleware/auth.js";
 import multer from "multer";
 ;
 const imageRouter = express.Router();
@@ -32,7 +32,7 @@ imageRouter.delete("/images/:filename", adminOnly, deleteImage);
 imageRouter.delete("/clear", adminOnly, clearImages);
 
 // Upload image to image service (all authenticated users)
-imageRouter.post("/upload", authMiddleware, upload.single("image"), uploadImage);
+imageRouter.post("/upload", userOrGuest, upload.single("image"), uploadImage);
 
 // Check disk connection and health (public endpoint)
 imageRouter.get("/disk/health", checkDiskHealth);

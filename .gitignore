@@ -110,3 +110,6 @@ build/
 *.pem
 *.key
 *.crt
+
+# Test directory (development only)
+test/

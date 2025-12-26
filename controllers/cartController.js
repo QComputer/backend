@@ -1,8 +1,4 @@
- import userModel from "../models/userModel.js";
-import cartModel from "../models/cartModel.js";
-import productModel from "../models/productModel.js";
 import winston from "winston";
-import { authMiddleware } from '../middleware/auth.js';
 import { successResponse, errorResponse, notFoundResponse } from '../utils/apiResponse.js';
 // Removed unused imports - using Winston logger instead
 import cartService from '../services/cartService.js';
@@ -23,12 +19,12 @@ const logger = winston.createLogger({
  */
 const getCart = async (req, res) => {
   try {
-    // Unified approach: use req.user for both guest and authenticated users
+    // Unified approach: use req.user for both users and sessionId for guest users
     let userContext;
     
     // Handle guest sessions from autoGuestLogin
-    if (req.sessionType === 'guest' && req.userId) {
-      userContext = { sessionId: req.userId };
+    if (req.sessionId) {
+      userContext = { sessionId: req.sessionId };
     } else if (req.user && req.userId) {
       userContext = { userId: req.userId };
     } else {

@@ -47,6 +47,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Trust proxy for accurate IP detection (important for rate limiting behind reverse proxies)
+app.set('trust proxy', true);
+
 // Setup all middleware
 setupMiddleware(app);
 

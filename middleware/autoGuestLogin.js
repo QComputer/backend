@@ -1,4 +1,5 @@
 import sessionModel from '../models/sessionModel.js';
+import userModel from '../models/userModel.js';
 import { standardError } from '../utils/apiUtils.js';
 
 /**
@@ -14,7 +15,7 @@ export const autoGuestLogin = async (req, res, next) => {
       return next();
     }
     // Check for existing guest session from headers, cookies, or query params
-    let sessionId = req.headers['x-session-id'] || req.cookies?.guest_session
+    const sessionId = req.headers['x-session-id'] || req.cookies?.guest_session
 
     let session = null;
 
@@ -81,6 +82,7 @@ export const autoGuestLogin = async (req, res, next) => {
     req.sessionId = session.sessionId;
     req.sessionToken = session.token;
     req.isGuest = session.isGuest;
+    
 
     // For backward compatibility with existing guest cart endpoints
     req.headers['x-session-id'] = session.sessionId;
@@ -91,13 +93,6 @@ export const autoGuestLogin = async (req, res, next) => {
     req.userRole = 'guest';
     req.userId = null;
     req.sessionId = session.sessionId;
-    req.user = {
-      id: null,
-      session: session,
-      role: 'guest',
-      username: `guest_${session.sessionId.substring(0, 8)}`,
-      isTemporary: true
-    };
 
     console.log(`🔄 Guest session unified: ${session.sessionId} as authenticated guest for user ${req.user.username}`);
 
@@ -131,6 +126,25 @@ function getDeviceType(userAgent) {
 
   return 'desktop';
 }
+
+/**
+ * Cleanup existing guest user documents from database
+ * This function should be run once during migration to remove old guest user records
+ */
+export const cleanupGuestUsers = async () => {
+  try {
+    const result = await userModel.deleteMany({
+      role: 'guest',
+      isTemporary: true
+    });
+
+    console.log(`🗑️  Cleaned up ${result.deletedCount} old guest user documents`);
+    return result.deletedCount;
+  } catch (error) {
+    console.error('❌ Error cleaning up guest users:', error.message);
+    throw error;
+  }
+};
 
 /**
  * Middleware to ensure guest session is valid

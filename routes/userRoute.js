@@ -56,24 +56,24 @@ userRouter.post("/login", loginUser);
 userRouter.post("/guest-login", guestLogin);
 
 // User account and profile
-userRouter.get("/account", authMiddleware({ requireAuth: true }), userAccount);
-userRouter.get("/profile", authMiddleware({ requireAuth: true }), userProfile); // user endpoint to see their profile
+userRouter.get("/account", authMiddleware, userAccount);
+userRouter.get("/profile", authMiddleware, userProfile); // user endpoint to see their profile
 //userRouter.get("/menus", authMiddleware({ requireAuth: true }), userMenus); // user endpoint to see their catalog
-userRouter.post("/update-profile", authMiddleware({ requireAuth: true }), updateProfile);
-userRouter.post("/update-status", authMiddleware({ requireAuth: true }), updateStatus);
-userRouter.post("/update-status-custom", authMiddleware({ requireAuth: true }), updateStatusCustom);
+userRouter.post("/update-profile", authMiddleware, updateProfile);
+userRouter.post("/update-status", authMiddleware, updateStatus);
+userRouter.post("/update-status-custom", authMiddleware, updateStatusCustom);
 //userRouter.post("/update-menu/:menuId", authMiddleware({ requireAuth: true }), updateMenu); // Temporarily disabled
-userRouter.post("/change-password", authMiddleware({ requireAuth: true }), changePassword);
+userRouter.post("/change-password", authMiddleware, changePassword);
 //// Image uploads
-userRouter.post("/upload-profile-image/:targetId", authMiddleware({ requireAuth: true }), ownerOnly("targetId"), upload.single("image"), uploadProfileImage);
-userRouter.post("/upload-avatar-image/:targetId", authMiddleware({ requireAuth: true }), ownerOnly("targetId"), upload.single("image"), uploadAvatarImage);
+userRouter.post("/upload-profile-image/:targetId", authMiddleware, ownerOnly("targetId"), upload.single("image"), uploadProfileImage);
+userRouter.post("/upload-avatar-image/:targetId", authMiddleware, ownerOnly("targetId"), upload.single("image"), uploadAvatarImage);
 //// Social features
-userRouter.post("/follow", authMiddleware({ requireAuth: true }), toggleFollow);
-userRouter.post("/friend", authMiddleware({ requireAuth: true }), toggleFriend);
+userRouter.post("/follow", authMiddleware, toggleFollow);
+userRouter.post("/friend", authMiddleware, toggleFriend);
 //// Favorites
-userRouter.post("/favorites/add", authMiddleware({ requireAuth: true }), addToFavorites);
-userRouter.post("/favorites/remove", authMiddleware({ requireAuth: true }), removeFromFavorites);
-userRouter.get("/favorites/:userId", authMiddleware({ requireAuth: true }), getFavorites);
+userRouter.post("/favorites/add", authMiddleware, addToFavorites);
+userRouter.post("/favorites/remove", authMiddleware, removeFromFavorites);
+userRouter.get("/favorites/:userId", authMiddleware, getFavorites);
 
 
 // Admin routes

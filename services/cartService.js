@@ -14,15 +14,13 @@ import { successResponse, errorResponse, notFoundResponse } from '../utils/apiRe
  */
 class CartService {
   /**
-   * Get cart for a user (user or guest)
-   * @param {string} userId - User ID or guest session ID
+   * Get cart for a recorded user or guest
+   * @param {any} userContext - User ID or guest session ID
    * @returns {Promise<Object>} Cart object with populated data
    */
   async getCart(userContext) {
     try {
-      // Unified approach: userContext can be either userId or session context
       let query;
-      
       if (typeof userContext === 'string') {
         // Legacy support for string userId/sessionId
         const isGuestSession = userContext.startsWith('guest_');
@@ -55,7 +53,7 @@ class CartService {
         })
         .populate({
           path: 'items.catalog',
-          select: 'name'
+          select: 'name _id'
         });
 
       if (!cart) {
@@ -66,7 +64,7 @@ class CartService {
         };
 
         if (query.sessionId) {
-          cartData.sessionId = query.sessionId;
+          cartData.sessionId = sessionId;
         } else {
           cartData.user = query.user;
         }
@@ -83,7 +81,7 @@ class CartService {
 
   /**
    * Add item to cart
-   * @param {string} userId - User ID or guest session ID
+   * @param {any} userContext - User ID or session ID
    * @param {string} productId - Product ID
    * @param {number} quantity - Quantity to add
    * @param {string} catalogId - Catalog ID
@@ -158,7 +156,7 @@ class CartService {
 
   /**
    * Update item quantity in cart
-   * @param {string} userId - User ID or guest session ID
+   * @param {any} userContext - User ID or session ID
    * @param {string} productId - Product ID
    * @param {number} quantity - New quantity
    * @param {string} catalogId - Catalog ID
@@ -225,7 +223,7 @@ class CartService {
 
   /**
    * Remove item from cart
-   * @param {string} userId - User ID or guest session ID
+   * @param {any} userContext - User ID or session ID
    * @param {string} productId - Product ID
    * @returns {Promise<Object>} Updated cart
    */
@@ -271,7 +269,7 @@ class CartService {
 
   /**
    * Clear all items from cart
-   * @param {string} userId - User ID or guest session ID
+   * @param {any} userContext - User ID or session ID
    * @returns {Promise<Object>} Updated cart
    */
   async clearCart(userContext) {
@@ -291,7 +289,7 @@ class CartService {
 
   /**
    * Get cart item count
-   * @param {string} userId - User ID or guest session ID
+   * @param {any} userContext - User ID or session ID
    * @returns {Promise<number>} Total item count
    */
   async getCartCount(userContext) {
@@ -306,7 +304,7 @@ class CartService {
 
   /**
    * Get cart total value
-   * @param {string} userId - User ID or guest session ID
+   * @param {any} userContext - User ID or session ID
    * @returns {Promise<number>} Total value
    */
   async getCartTotal(userContext) {
@@ -323,7 +321,7 @@ class CartService {
 
   /**
    * Validate cart items (check availability and stock)
-   * @param {string} userId - User ID or guest session ID
+   * @param {any} userContext - User ID or guest session ID
    * @returns {Promise<Object>} Validation result
    */
   async validateCart(userContext) {
@@ -369,14 +367,14 @@ class CartService {
 
   /**
    * Migrate guest cart to user cart
-   * @param {string} guestSessionId - Guest session ID
+   * @param {string} sessionId - Guest session ID
    * @param {string} userId - User ID
    * @returns {Promise<Object>} Migrated cart
    */
   async migrateGuestCart(guestSessionId, userId) {
     try {
       // Get guest cart using unified context
-      const guestCart = await this.getCart({ sessionId: guestSessionId });
+      const guestCart = await this.getCart({ sessionId });
       
       if (!guestCart || guestCart.items.length === 0) {
         return await this.getCart({ userId }); // Return user's cart

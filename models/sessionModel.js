@@ -35,6 +35,14 @@ const sessionSchema = new mongoose.Schema({
   },
 
   /**
+   * Flag to identify guest sessions
+   */
+  isGuest: {
+    type: Boolean,
+    default: false
+  },
+
+  /**
    * Session creation timestamp
    */
   createdAt: {
@@ -75,14 +83,44 @@ const sessionSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Pre-save hook to ensure expiresAt is set for guest sessions
-sessionSchema.pre('save', function(next) {
-  // Set default expiration: 24 hours for guest sessions
-  if (this.isGuest && !this.expiresAt) {
-    const expirationHours = parseInt(process.env.GUEST_SESSION_EXPIRATION_HOURS) || 24;
-    this.expiresAt = new Date(Date.now() + expirationHours * 60 * 60 * 1000);
+// Unified pre-save hook for session management
+sessionSchema.pre('save', async function(next) {
+  try {
+    // Set default expiration for guest sessions (24 hours)
+    if (this.isGuest && !this.expiresAt) {
+      const expirationHours = parseInt(process.env.GUEST_SESSION_EXPIRATION_HOURS) || 24;
+      this.expiresAt = new Date(Date.now() + expirationHours * 60 * 60 * 1000);
+    }
+    
+    // Automatically create cart for new guest sessions
+    if (this.isNew && this.isGuest) {
+      // Import cartModel dynamically to avoid circular dependency
+      const cartModel = (await import('./cartModel.js')).default;
+      
+      // Create a new cart for this guest session
+      const newCart = new cartModel({
+        sessionId: this.sessionId,
+        items: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        expiresAt: this.expiresAt // Use same expiration as session
+      });
+      
+      // Save the cart
+      await newCart.save();
+      
+      // Set the cart reference on the session
+      this.cartId = newCart._id;
+      
+      console.log(`✅ Automatically created cart ${newCart._id} for new guest session ${this.sessionId}`);
+    }
+    
+    next();
+  } catch (error) {
+    console.error('❌ Error in session pre-save hook:', error.message);
+    // Don't fail session creation if cart creation fails
+    next();
   }
-  next();
 });
 
 // Method to check if session is expired

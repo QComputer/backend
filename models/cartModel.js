@@ -14,7 +14,7 @@ const cartSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
   // For guest users (session-based)
   sessionId: { type: String },
-  session: { type: mongoose.Schema.Types.ObjectId, ref: 'session' },
+  //session: { type: mongoose.Schema.Types.ObjectId, ref: 'session' },
 
   items: [cartItemSchema],
 
@@ -28,7 +28,7 @@ const cartSchema = new mongoose.Schema({
 
 // Ensure either userId or sessionId is present
 cartSchema.pre('validate', function (next) {
-  if (!this.user && !this.sessionId && !this.session) {
+  if (!this.user && !this.sessionId) {
     next(new Error('Either userId or sessionId must be provided'));
   }
   next();
@@ -37,14 +37,10 @@ cartSchema.pre('validate', function (next) {
 // Set expiration for guest carts
 cartSchema.pre('save', function (next) {
   // Set expiration for guest carts (24 hours)
-  if (this.session && !this.user && !this.expiresAt) {
-    if (this.session.expiresAt) {
-      this.expiresAt = this.session.expiresAt
-    } else {
-      const expirationHours = parseInt(process.env.GUEST_SESSION_EXPIRATION_HOURS) || 24;
-      this.expiresAt = new Date(Date.now() + expirationHours * 60 * 60 * 1000);
-      this.session.expiresAt = this.expiresAt;
-    }
+  if (this.sessionId && !this.expiresAt) {
+    const expirationHours = parseInt(process.env.GUEST_SESSION_EXPIRATION_HOURS) || 24;
+    this.expiresAt = new Date(Date.now() + expirationHours * 60 * 60 * 1000);
+    this.session.expiresAt = this.expiresAt;
   }
   next();
 });
@@ -56,7 +52,7 @@ cartSchema.methods.isExpired = function () {
 
 // Indexes for performance
 cartSchema.index({ user: 1 });
-cartSchema.index({ session: 1 });
+cartSchema.index({ sessionId: 1 });
 cartSchema.index({ updatedAt: -1 });
 cartSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
